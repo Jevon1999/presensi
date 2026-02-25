@@ -14,7 +14,7 @@ class AuthController extends Controller
         $this->apiUrl = env('API_URL', 'http://localhost:8000/api');
     }
 
-    public function showLogini()
+    public function showLogin()
     {
         return view('auth.login');
     }

@@ -1,44 +1,17 @@
 import './bootstrap';
-import './services/api';
+import { createApp, h } from 'vue';
+import { createInertiaApp } from '@inertiajs/vue3';
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
-// Import Alpine.js for interactive components
-import Alpine from 'alpinejs';
-
-// Initialize Alpine
-window.Alpine = Alpine;
-Alpine.start();
-
-
-// auto load auth token
-const token = localStorage.getItem('auth_token');
-if (token) {
-    window.axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-}
-
-// Global app utilities
-window.app = {
-    // Toast notification helper
-    toast: (message, type = 'success') => {
-        // You can integrate with toast libraries like Toastify or custom implementation
-        console.log(`[${type.toUpperCase()}] ${message}`);
+createInertiaApp({
+    title: (title) => `${title} - Presensi GI`,
+    resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
+    setup({ el, App, props, plugin }) {
+        return createApp({ render: () => h(App, props) })
+            .use(plugin)
+            .mount(el);
     },
-    
-    // Confirm dialog helper
-    confirm: (message) => {
-        return window.confirm(message); 
+    progress: {
+        color: '#4a5568',
     },
-    
-
-    //helper buat cek auth
-    isAuthenticated: () => {
-        return !!localStorage.getItem('auth_token');
-    },
-
-    //helper buat logout
-    logout: () => {
-        localStorage.removeItem('auth_token');
-        delete window.axios.defaults.headers.common['Authorization'];
-        window.location.href = '/login';
-
-    }
-};
+});

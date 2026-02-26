@@ -5,8 +5,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\MemberController;
-use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\ProgressController;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,42 +19,64 @@ use App\Http\Controllers\ProgressController;
 |
 */
 
-Route::get('/', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+// Guest routes
+Route::middleware('guest')->group(function () {
+    Route::get('/', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+});
 
+// Authenticated routes
 Route::middleware(['web'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
-    //auth endpoint
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/me', [AuthController::class, 'me']);
 
-    //attendance 
-    Route::get('/attendances', [AttendanceController::class, 'index']);
-    Route::get('/attendances/{id}', [AttendanceController::class, 'show']);
-    Route::post('/attendances/check-in', [AttendanceController::class, 'checkIn']);
-    Route::post('/attendances/check-out', [AttendanceController::class, 'checkOut']);
-    Route::post('/attendances/{id}/reset', [AttendanceController::class, 'reset']);
+    // Protected routes - require session with auth_token
+    Route::middleware('token')->group(function () {
+        
+        // Dashboard
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        
+        // Members
+        Route::prefix('members')->name('members.')->group(function () {
+            Route::get('/', function () {
+                return Inertia::render('Members/Index');
+            })->name('index');
+            Route::get('/{id}', [MemberController::class, 'show'])->name('show');
+            Route::post('/', [MemberController::class, 'store'])->name('store');
+            Route::put('/{id}', [MemberController::class, 'update'])->name('update');
+            Route::delete('/{id}', [MemberController::class, 'destroy'])->name('destroy');
+        });
 
-    //member
-    Route::get('/members', [MemberController::class, 'index']);
-    Route::get('/members/{id}', [MemberController::class, 'show']);
-    Route::post('/members', [MemberController::class, 'store']);
-    Route::put('/members/{id}', [MemberController::class, 'update']);
-    Route::delete('/members/{id}', [MemberController::class, 'destroy']);
+        // Attendances
+        Route::prefix('attendances')->name('attendances.')->group(function () {
+            Route::get('/', function () {
+                return Inertia::render('Attendances/Index');
+            })->name('index');
+            Route::get('/{id}', [AttendanceController::class, 'show'])->name('show');
+            Route::post('/check-in', [AttendanceController::class, 'checkIn'])->name('check-in');
+            Route::post('/check-out', [AttendanceController::class, 'checkOut'])->name('check-out');
+            Route::post('/{id}/reset', [AttendanceController::class, 'reset'])->name('reset');
+        });
 
-    //office
-    Route::get('/offices', [OfficeController::class, 'index']);
-    Route::get('/offices/{id}', [OfficeController::class, 'show']);
-    Route::post('/offices', [OfficeController::class, 'store']);
-    Route::put('/offices/{id}', [OfficeController::class, 'update']);
-    Route::delete('/offices/{id}', [OfficeController::class, 'destroy']);
+        // Progresses
+        Route::prefix('progresses')->name('progresses.')->group(function () {
+            Route::get('/', function () {
+                return Inertia::render('Progresses/Index');
+            })->name('index');
+            Route::get('/{id}', [ProgressController::class, 'show'])->name('show');
+            Route::post('/', [ProgressController::class, 'store'])->name('store');
+            Route::put('/{id}', [ProgressController::class, 'update'])->name('update');
+            Route::delete('/{id}', [ProgressController::class, 'destroy'])->name('destroy');
+        });
 
-    //progresses
-    Route::get('/progresses', [ProgressController::class, 'index']);
-    Route::get('/progresses/{id}', [ProgressController::class, 'show']);
-    Route::post('/progresses', [ProgressController::class, 'store']);
-    Route::put('/progresses/{id}', [ProgressController::class, 'update']);
-    Route::delete('/progresses/{id}', [ProgressController::class, 'destroy']);
+        // Bot configuration
+        Route::get('/bot/config', function () {
+            return Inertia::render('Bot/Config');
+        })->name('bot.config');
 
+        // User management
+        Route::get('/users', function () {
+            return Inertia::render('Users/Index');
+        })->name('users.index');
+    });
 });

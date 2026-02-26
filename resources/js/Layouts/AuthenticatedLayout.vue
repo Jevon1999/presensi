@@ -8,15 +8,15 @@ const sidebarOpen = ref(false);
 const user = computed(() => page.props.auth.user);
 
 const menuItems = [
-    { name: 'Dashboard', route: 'dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-    { name: 'Data Member', route: 'members.index', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
-    { name: 'Data Absensi', route: 'attendances.index', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
-    { name: 'Laporan Progress', route: 'progresses.index', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+    { name: 'SYSTEM MONITOR', route: 'dashboard', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+    { name: 'UNIT REGISTRY', route: 'members.index', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z' },
+    { name: 'ATTENDANCE LOG', route: 'attendances.index', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
+    { name: 'PROGRESS REPORTS', route: 'progresses.index', icon: 'M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
 ];
 
 const adminMenuItems = [
-    { name: 'Konfigurasi Bot WA', route: 'bot.config', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' },
-    { name: 'Manajemen User', route: 'users.index', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
+    { name: 'BOT CONFIG', route: 'bot.config', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
+    { name: 'USER ADMIN', route: 'users.index', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
 ];
 
 const isAdmin = computed(() => user.value?.role === 'admin');
@@ -31,52 +31,54 @@ const isCurrentRoute = (routeName) => {
         <input id="sidebar-drawer" type="checkbox" class="drawer-toggle" v-model="sidebarOpen" />
         
         <!-- Main Content -->
-        <div class="drawer-content flex flex-col">
+        <div class="drawer-content flex flex-col bg-base-100">
             <!-- Header -->
-            <header class="navbar bg-neutral text-neutral-content sticky top-0 z-30 shadow-lg">
-                <div class="flex-none lg:hidden">
-                    <label for="sidebar-drawer" class="btn btn-square btn-ghost">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <header class="h-14 bg-base-200 border-b border-neutral/30 flex items-center px-4 sticky top-0 z-30">
+                <div class="flex-none lg:hidden mr-3">
+                    <label for="sidebar-drawer" class="btn btn-ghost btn-sm btn-square">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                         </svg>
                     </label>
                 </div>
                 
-                <div class="flex-1 px-2 mx-2">
-                    <h1 class="text-lg font-bold hidden lg:block">
-                        <slot name="header">Dashboard</slot>
+                <div class="flex-1">
+                    <h1 class="text-xs font-mono font-semibold tracking-wider uppercase text-base-content/70">
+                        <slot name="header">SYSTEM MONITOR</slot>
                     </h1>
                 </div>
                 
-                <div class="flex-none gap-2">
-                    <!-- Notifications -->
-                    <button class="btn btn-ghost btn-circle">
-                        <div class="indicator">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
-                            </svg>
-                        </div>
-                    </button>
+                <div class="flex-none flex items-center gap-2">
+                    <!-- Status Indicator -->
+                    <div class="hidden md:flex items-center gap-2 px-2">
+                        <div class="w-2 h-2 rounded-full bg-success animate-pulse"></div>
+                        <span class="text-xs font-mono text-success">ONLINE</span>
+                    </div>
 
-                    <!-- User Dropdown -->
+                    <!-- User Info -->
                     <div class="dropdown dropdown-end">
-                        <label tabindex="0" class="btn btn-ghost btn-circle avatar placeholder">
-                            <div class="bg-primary text-primary-content rounded-full w-10">
-                                <span class="text-sm">{{ user?.name?.charAt(0).toUpperCase() }}</span>
+                        <label tabindex="0" class="btn btn-ghost btn-sm normal-case gap-2">
+                            <div class="w-6 h-6 rounded bg-neutral flex items-center justify-center">
+                                <span class="text-xs font-mono">{{ user?.name?.charAt(0).toUpperCase() }}</span>
                             </div>
+                            <span class="hidden md:inline text-xs font-mono">{{ user?.name }}</span>
                         </label>
-                        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52 text-base-content">
-                            <li class="menu-title">{{ user?.name }}</li>
-                            <li><a>Profile</a></li>
-                            <li><a>Settings</a></li>
-                            <li><Link href="/logout" method="post" as="button">Logout</Link></li>
+                        <ul tabindex="0" class="dropdown-content menu menu-sm bg-base-200 border border-neutral/30 rounded-md w-52 p-2 mt-2">
+                            <li class="menu-title">
+                                <span class="text-xs font-mono">{{ user?.email }}</span>
+                            </li>
+                            <li><a class="text-xs font-mono">Profile</a></li>
+                            <li><a class="text-xs font-mono">Settings</a></li>
+                            <li class="border-t border-neutral/30 mt-1 pt-1">
+                                <Link href="/logout" method="post" as="button" class="text-xs font-mono text-error">LOGOUT</Link>
+                            </li>
                         </ul>
                     </div>
                 </div>
             </header>
 
             <!-- Page Content -->
-            <main class="p-6 bg-base-200 min-h-screen">
+            <main class="flex-1 p-4 md:p-6">
                 <slot />
             </main>
         </div>
@@ -85,54 +87,75 @@ const isCurrentRoute = (routeName) => {
         <div class="drawer-side">
             <label for="sidebar-drawer" class="drawer-overlay"></label>
             
-            <aside class="bg-neutral text-neutral-content w-64 min-h-full">
-                <!-- Logo -->
-                <div class="bg-neutral-focus p-4 flex items-center justify-center border-b border-neutral-content/10">
+            <aside class="w-64 min-h-full bg-base-200 border-r border-neutral/30">
+                <!-- Logo/Brand -->
+                <div class="h-14 flex items-center justify-center border-b border-neutral/30">
                     <div class="flex items-center gap-2">
-                        <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                            <span class="text-2xl">📋</span>
+                        <div class="w-8 h-8 bg-primary/20 border border-primary/50 rounded flex items-center justify-center">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
                         </div>
-                        <span class="font-bold text-xl">Presensi GI</span>
+                        <span class="font-mono text-sm font-bold tracking-wider">PRESENSI</span>
                     </div>
                 </div>
 
                 <!-- Navigation Menu -->
-                <ul class="menu p-4 gap-1">
-                    <li v-for="item in menuItems" :key="item.route">
-                        <Link 
-                            :href="route(item.route)" 
-                            :class="{ 'active bg-primary': isCurrentRoute(item.route) }"
-                            class="flex items-center gap-2"
-                        >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon"/>
-                            </svg>
-                            {{ item.name }}
-                        </Link>
-                    </li>
-
-                    <template v-if="isAdmin">
-                        <li class="menu-title mt-4">Admin</li>
-                        <li v-for="item in adminMenuItems" :key="item.route">
+                <div class="p-3">
+                    <div class="text-[10px] font-mono font-semibold tracking-widest text-base-content/40 px-3 py-2">
+                        MAIN OPERATIONS
+                    </div>
+                    <ul class="space-y-1">
+                        <li v-for="item in menuItems" :key="item.route">
                             <Link 
                                 :href="route(item.route)" 
-                                :class="{ 'active bg-primary': isCurrentRoute(item.route) }"
-                                class="flex items-center gap-2"
+                                :class="[ 
+                                    'flex items-center gap-3 px-3 py-2 rounded-md text-xs font-mono transition-colors',
+                                    isCurrentRoute(item.route) 
+                                        ? 'bg-primary/10 text-primary border-l-2 border-primary' 
+                                        : 'text-base-content/70 hover:bg-base-300 hover:text-base-content border-l-2 border-transparent'
+                                ]"
                             >
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon"/>
                                 </svg>
-                                {{ item.name }}
+                                <span class="font-semibold tracking-wide">{{ item.name }}</span>
                             </Link>
                         </li>
+                    </ul>
+
+                    <template v-if="isAdmin">
+                        <div class="text-[10px] font-mono font-semibold tracking-widest text-base-content/40 px-3 py-2 mt-4">
+                            ADMINISTRATION
+                        </div>
+                        <ul class="space-y-1">
+                            <li v-for="item in adminMenuItems" :key="item.route">
+                                <Link 
+                                    :href="route(item.route)" 
+                                    :class="[ 
+                                        'flex items-center gap-3 px-3 py-2 rounded-md text-xs font-mono transition-colors',
+                                        isCurrentRoute(item.route) 
+                                            ? 'bg-primary/10 text-primary border-l-2 border-primary' 
+                                            : 'text-base-content/70 hover:bg-base-300 hover:text-base-content border-l-2 border-transparent'
+                                    ]"
+                                >
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon"/>
+                                    </svg>
+                                    <span class="font-semibold tracking-wide">{{ item.name }}</span>
+                                </Link>
+                            </li>
+                        </ul>
                     </template>
-                </ul>
+                </div>
 
                 <!-- Footer Info -->
-                <div class="absolute bottom-4 left-4 right-4">
-                    <div class="bg-base-100 text-base-content rounded-lg p-3 text-sm">
-                        <div class="font-semibold">{{ user?.name }}</div>
-                        <div class="text-xs opacity-70">{{ user?.role === 'admin' ? 'Administrator' : 'Member' }}</div>
+                <div class="absolute bottom-4 left-3 right-3">
+                    <div class="bg-base-300 border border-neutral/30 rounded-md p-3">
+                        <div class="text-xs font-mono font-semibold">{{ user?.name }}</div>
+                        <div class="text-[10px] font-mono text-base-content/50 uppercase tracking-wider mt-0.5">
+                            {{ user?.role === 'admin' ? 'Administrator' : 'User' }}
+                        </div>
                     </div>
                 </div>
             </aside>

@@ -60,17 +60,18 @@ const chartData = computed(() => {
         labels: days,
         datasets: [
             {
-                label: 'Kehadiran',
+                label: 'ATTENDANCE',
                 data: counts,
-                borderColor: '#4a5568',
-                backgroundColor: 'rgba(74, 85, 104, 0.1)',
+                borderColor: '#FF8C42',
+                backgroundColor: 'rgba(255, 140, 66, 0.1)',
                 fill: true,
-                tension: 0.4,
-                pointBackgroundColor: '#4a5568',
-                pointBorderColor: '#fff',
+                tension: 0.2,
+                pointBackgroundColor: '#FF8C42',
+                pointBorderColor: '#0F1115',
                 pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 6
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                borderWidth: 2
             }
         ]
     };
@@ -87,11 +88,22 @@ const chartOptions = {
             display: false
         },
         tooltip: {
-            backgroundColor: '#3d4451',
-            titleColor: '#fff',
-            bodyColor: '#fff',
-            padding: 12,
-            displayColors: false
+            backgroundColor: '#171A1F',
+            titleColor: '#E8E9EA',
+            bodyColor: '#E8E9EA',
+            padding: 8,
+            displayColors: false,
+            titleFont: {
+                family: 'monospace',
+                size: 10
+            },
+            bodyFont: {
+                family: 'monospace',
+                size: 12,
+                weight: 'bold'
+            },
+            borderColor: '#FF8C42',
+            borderWidth: 1
         }
     },
     scales: {
@@ -99,18 +111,34 @@ const chartOptions = {
             beginAtZero: true,
             ticks: {
                 stepSize: 1,
-                color: '#9ca3af'
+                color: '#666B73',
+                font: {
+                    family: 'monospace',
+                    size: 10
+                }
             },
             grid: {
-                color: 'rgba(156, 163, 175, 0.1)'
+                color: '#1E2228',
+                lineWidth: 1
+            },
+            border: {
+                color: '#666B73'
             }
         },
         x: {
             ticks: {
-                color: '#9ca3af'
+                color: '#666B73',
+                font: {
+                    family: 'monospace',
+                    size: 10
+                }
             },
             grid: {
-                display: false
+                color: '#1E2228',
+                lineWidth: 1
+            },
+            border: {
+                color: '#666B73'
             }
         }
     }
@@ -118,9 +146,12 @@ const chartOptions = {
 </script>
 
 <template>
-    <div class="card bg-base-100 shadow-xl">
-        <div class="card-body">
-            <h3 class="card-title text-lg mb-4">Tren Kehadiran Mingguan</h3>
+    <div class="bg-base-200 border border-neutral/30 rounded-md">
+        <div class="p-4">
+            <div class="flex items-center gap-2 mb-4">
+                <div class="w-1 h-4 bg-primary rounded"></div>
+                <h3 class="text-xs font-mono font-semibold tracking-wider uppercase">WEEKLY TELEMETRY</h3>
+            </div>
             <div class="h-64">
                 <Line :data="chartData" :options="chartOptions" />
             </div>

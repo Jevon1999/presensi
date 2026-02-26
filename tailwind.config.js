@@ -3,19 +3,19 @@ export default {
   daisyui: {
     themes: [
       {
-        scada: {
-          "primary": "#FF8C42",      // Industrial orange
-          "secondary": "#8A8D91",    // Gray
-          "accent": "#FFA726",       // Amber accent
-          "neutral": "#171A1F",      // Dark panel
-          "base-100": "#0F1115",     // Darkest background
-          "base-200": "#171A1F",     // Panel surface
-          "base-300": "#1E2228",     // Elevated surface
-          "info": "#42A5F5",         // System blue
-          "success": "#66BB6A",      // Normal state
-          "warning": "#FFA726",      // Warning state
-          "error": "#EF5350",        // Critical state
-          "base-content": "#E8E9EA", // Light text
+        modern: {
+          "primary": "#3B82F6",      // Blue
+          "secondary": "#8B5CF6",    // Purple
+          "accent": "#06B6D4",       // Cyan
+          "neutral": "#1F2937",      // Dark gray
+          "base-100": "#FFFFFF",     // White
+          "base-200": "#F3F4F6",     // Light gray
+          "base-300": "#E5E7EB",     // Gray
+          "info": "#3B82F6",         // Blue
+          "success": "#10B981",      // Emerald
+          "warning": "#F59E0B",      // Amber
+          "error": "#EF4444",        // Red
+          "base-content": "#1F2937", // Dark text
         },
       },
     ],

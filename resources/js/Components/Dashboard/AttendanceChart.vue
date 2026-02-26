@@ -60,18 +60,18 @@ const chartData = computed(() => {
         labels: days,
         datasets: [
             {
-                label: 'ATTENDANCE',
+                label: 'Present',
                 data: counts,
-                borderColor: '#FF8C42',
-                backgroundColor: 'rgba(255, 140, 66, 0.1)',
+                borderColor: '#3B82F6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
                 fill: true,
-                tension: 0.2,
-                pointBackgroundColor: '#FF8C42',
-                pointBorderColor: '#0F1115',
+                tension: 0.4,
+                pointBackgroundColor: '#3B82F6',
+                pointBorderColor: '#FFFFFF',
                 pointBorderWidth: 2,
-                pointRadius: 3,
-                pointHoverRadius: 5,
-                borderWidth: 2
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                borderWidth: 3
             }
         ]
     };
@@ -88,22 +88,20 @@ const chartOptions = {
             display: false
         },
         tooltip: {
-            backgroundColor: '#171A1F',
-            titleColor: '#E8E9EA',
-            bodyColor: '#E8E9EA',
-            padding: 8,
+            backgroundColor: '#1F2937',
+            titleColor: '#FFFFFF',
+            bodyColor: '#FFFFFF',
+            padding: 12,
             displayColors: false,
+            borderRadius: 12,
             titleFont: {
-                family: 'monospace',
-                size: 10
+                size: 12,
+                weight: 600
             },
             bodyFont: {
-                family: 'monospace',
-                size: 12,
+                size: 13,
                 weight: 'bold'
-            },
-            borderColor: '#FF8C42',
-            borderWidth: 1
+            }
         }
     },
     scales: {
@@ -111,34 +109,33 @@ const chartOptions = {
             beginAtZero: true,
             ticks: {
                 stepSize: 1,
-                color: '#666B73',
+                color: '#9CA3AF',
                 font: {
-                    family: 'monospace',
-                    size: 10
+                    size: 12,
+                    weight: 600
                 }
             },
             grid: {
-                color: '#1E2228',
+                color: '#F3F4F6',
                 lineWidth: 1
             },
             border: {
-                color: '#666B73'
+                display: false
             }
         },
         x: {
             ticks: {
-                color: '#666B73',
+                color: '#9CA3AF',
                 font: {
-                    family: 'monospace',
-                    size: 10
+                    size: 12,
+                    weight: 600
                 }
             },
             grid: {
-                color: '#1E2228',
-                lineWidth: 1
+                display: false
             },
             border: {
-                color: '#666B73'
+                display: false
             }
         }
     }
@@ -146,15 +143,19 @@ const chartOptions = {
 </script>
 
 <template>
-    <div class="bg-base-200 border border-neutral/30 rounded-md">
-        <div class="p-4">
-            <div class="flex items-center gap-2 mb-4">
-                <div class="w-1 h-4 bg-primary rounded"></div>
-                <h3 class="text-xs font-mono font-semibold tracking-wider uppercase">WEEKLY TELEMETRY</h3>
+    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h3 class="text-xl font-bold">Attendance Trends</h3>
+                <p class="text-sm text-gray-400">Weekly attendance data across all offices</p>
             </div>
-            <div class="h-64">
-                <Line :data="chartData" :options="chartOptions" />
-            </div>
+            <select class="bg-gray-50 border-none rounded-lg text-xs font-bold py-2 px-4 focus:ring-0">
+                <option>Last 7 Days</option>
+                <option>Last 30 Days</option>
+            </select>
+        </div>
+        <div class="h-[300px] w-full">
+            <Line :data="chartData" :options="chartOptions" />
         </div>
     </div>
 </template>

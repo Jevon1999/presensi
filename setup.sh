@@ -72,8 +72,8 @@ if [ "$1" = "setup" ]; then
     
     # Generate webhook secret
     echo ""
-    print_success "Generated Webhook Secret:"
-    SECRET=$(openssl rand -hex 32)
+    print_success "Webhook Secret (hardcoded):"
+    SECRET="koekontol"
     echo ""
     echo "  $SECRET"
     echo ""
@@ -83,7 +83,7 @@ if [ "$1" = "setup" ]; then
     
     # Test webhook endpoint
     print_success "Testing webhook endpoint..."
-    WEBHOOK_URL="https://absensi.globalintermedia.online/deploy-webhook.php"
+    WEBHOOK_URL="https://presensi.globalintermedia.online/deploy-webhook.php"
     HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$WEBHOOK_URL" 2>/dev/null || echo "000")
     
     if [ "$HTTP_CODE" = "400" ] || [ "$HTTP_CODE" = "401" ]; then
@@ -129,7 +129,7 @@ if [ "$1" = "deploy" ]; then
     
     # Maintenance mode
     log "Enabling maintenance mode..."
-    php artisan down --retry=60 --secret="deploy-2026" 2>/dev/null || true
+    php artisan down --retry=60 --secret="koekontol" 2>/dev/null || true
     
     # Stash changes
     log "Stashing local changes..."
@@ -152,12 +152,12 @@ if [ "$1" = "deploy" ]; then
     # Check npm changes
     if git diff HEAD@{1} --name-only 2>/dev/null | grep -q "package.json"; then
         log "Installing npm dependencies..."
-        npm install --production
+        npm install
     fi
     
-    # Build frontend assets
-    log "Building frontend assets..."
-    npm run build 2>/dev/null || print_warning "Failed to build assets"
+    # Build frontend assets (always build for frontend)
+    log "Building Vite assets..."
+    npm run build || print_warning "Failed to build assets"
     
     # Migrations
     log "Running migrations..."

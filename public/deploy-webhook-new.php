@@ -1,17 +1,21 @@
 <?php
 /**
- * Auto Deploy Webhook Handler - Absensi Frontend
+ * Auto Deploy Webhook Handler
  * 
  * Webhook ini akan dipanggil oleh GitHub setiap kali ada push ke branch main
  * URL: https://presensi.globalintermedia.online/deploy-webhook.php
+ * 
+ * Setup:
+ * 1. Set WEBHOOK_SECRET=koekontol di .env
+ * 2. Set di GitHub webhook settings dengan secret yang sama
  */
 
-// Load Laravel bootstrap for environment variables
+// Load environment variables
 require_once __DIR__ . '/../vendor/autoload.php';
 
 // Configuration
-$secret = getenv('WEBHOOK_SECRET') ?: 'koekontol';  // Default secret
-$branch = 'refs/heads/main';
+$secret = getenv('WEBHOOK_SECRET') ?: 'koekontol'; // Default secret
+$branch = 'refs/heads/main'; // Branch yang akan trigger deployment
 $deployScript = __DIR__ . '/../deploy.sh';
 
 // Log file
@@ -23,6 +27,10 @@ $logFile = __DIR__ . '/../storage/logs/deployment.log';
 function writeLog($message) {
     global $logFile;
     $timestamp = date('Y-m-d H:i:s');
+    $logDir = dirname($logFile);
+    if (!is_dir($logDir)) {
+        mkdir($logDir, 0755, true);
+    }
     file_put_contents($logFile, "[$timestamp] $message\n", FILE_APPEND);
 }
 

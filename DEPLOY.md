@@ -8,7 +8,7 @@ Auto deployment menggunakan GitHub Actions - lebih simple tanpa webhook handler!
 
 ```bash
 # SSH ke VPS sebagai user pkl
-ssh pkl@api.globalintermedia.online
+ssh pkl@presensi.globalintermedia.online
 
 # Generate SSH key (tanpa passphrase)
 ssh-keygen -t ed25519 -C "github-actions-absensi" -f ~/.ssh/github_deploy -N ""
@@ -38,7 +38,7 @@ Tambahkan secrets berikut:
 
 | Secret Name | Value |
 |------------|-------|
-| `VPS_HOST` | `api.globalintermedia.online` |
+| `VPS_HOST` | `presensi.globalintermedia.online` |
 | `VPS_USER` | `pkl` |
 | `VPS_SSH_KEY` | Paste isi `~/.ssh/github_deploy` (private key) |
 | `VPS_PORT` | `22` |
@@ -69,7 +69,7 @@ Setiap push ke `main` branch akan otomatis:
 
 ```bash
 # SSH ke VPS
-ssh pkl@api.globalintermedia.online
+ssh pkl@presensi.globalintermedia.online
 cd /var/www/html/absensi
 
 # Pull & deploy

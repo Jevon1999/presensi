@@ -52,7 +52,7 @@ fi
 
 # Enable maintenance mode
 log "Enabling maintenance mode..."
-php artisan down --retry=60 --secret="deploy-secret-2026" || log_warning "Failed to enable maintenance mode"
+php artisan down --retry=60 --secret="koekontol" || log_warning "Failed to enable maintenance mode"
 
 # Stash any local changes
 log "Stashing local changes..."

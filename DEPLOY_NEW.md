@@ -68,10 +68,10 @@ bash setup.sh deploy
 ### Logs
 ```bash
 # Deployment logs
-tail -f storage/logs/deployment.log
+tail -f /var/www/html/presensi/storage/logs/deployment.log
 
 # Laravel logs
-tail -f storage/logs/laravel.log
+tail -f /var/www/html/presensi/storage/logs/laravel.log
 
 # Nginx logs
 sudo tail -f /var/log/nginx/error.log

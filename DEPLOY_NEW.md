@@ -32,7 +32,7 @@ WEBHOOK_SECRET=koekontol
 
 1. Buka: https://github.com/YOUR-USERNAME/absensi/settings/hooks
 2. Add webhook:
-   - **Payload URL:** `https://presensi.globalintermedia.online/deploy-webhook.php`
+   - **Payload URL:** `https://presensi.globalintermedia.online/webhook.php`
    - **Content type:** `application/json`
    - **Secret:** `koekontol`
    - **Events:** Just the push event
@@ -80,7 +80,7 @@ sudo tail -f /var/log/nginx/error.log
 ### Test Webhook
 ```bash
 # Test endpoint (harus return error 400/401, itu normal)
-curl -I https://presensi.globalintermedia.online/deploy-webhook.php
+curl -I https://presensi.globalintermedia.online/webhook.php
 ```
 
 ---

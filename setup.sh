@@ -83,7 +83,7 @@ if [ "$1" = "setup" ]; then
     
     # Test webhook endpoint
     print_success "Testing webhook endpoint..."
-    WEBHOOK_URL="https://presensi.globalintermedia.online/deploy-webhook.php"
+    WEBHOOK_URL="https://presensi.globalintermedia.online/webhook.php"
     HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$WEBHOOK_URL" 2>/dev/null || echo "000")
     
     if [ "$HTTP_CODE" = "400" ] || [ "$HTTP_CODE" = "401" ]; then

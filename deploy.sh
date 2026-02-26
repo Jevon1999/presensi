@@ -13,7 +13,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Config - SESUAIKAN PATH INI
-PROJECT_DIR="/var/www/html/absensi"
+PROJECT_DIR="/var/www/html/presensi"
 LOG_FILE="$PROJECT_DIR/storage/logs/deployment.log"
 
 # Function to log with timestamp

@@ -15,7 +15,7 @@ BLUE='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration - SESUAIKAN PATH INI
-PROJECT_DIR="/var/www/html/absensi"
+PROJECT_DIR="/var/www/html/presensi"
 LOG_FILE="$PROJECT_DIR/storage/logs/deployment.log"
 
 # Functions
@@ -61,7 +61,7 @@ if [ "$1" = "setup" ]; then
         # Running as root
         chmod -R 775 storage bootstrap/cache
         chown -R www-data:www-data storage bootstrap/cache public/build
-        chown pkl:www-data setup.sh auto-pull.sh
+        chown presensi:www-data setup.sh auto-pull.sh
         chmod +x setup.sh auto-pull.sh artisan
     else
         # Running as user
@@ -99,7 +99,7 @@ if [ "$1" = "setup" ]; then
     echo "  1. Add WEBHOOK_SECRET to .env file"
     echo "  2. Setup GitHub webhook:"
     echo "     URL: $WEBHOOK_URL"
-    echo "     Secret: (use generated secret)"
+    echo "     Secret: koekontol"
     echo "     Events: Push events only"
     echo ""
     echo "  3. Or setup cronjob:"

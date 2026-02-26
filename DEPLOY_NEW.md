@@ -8,10 +8,10 @@ Simple auto-deployment menggunakan GitHub Webhook untuk Absensi Frontend.
 
 ```bash
 # SSH ke VPS
-ssh pkl@presensi.globalintermedia.online
+ssh presensi@presensi.globalintermedia.online
 
 # Masuk ke project
-cd /var/www/html/absensi
+cd /var/www/html/presensi
 
 # Run setup
 bash setup.sh setup
@@ -54,8 +54,8 @@ Sekarang setiap push ke `main` branch, otomatis:
 
 ```bash
 # SSH ke VPS
-ssh pkl@presensi.globalintermedia.online
-cd /var/www/html/absensi
+ssh presensi@presensi.globalintermedia.online
+cd /var/www/html/presensi
 
 # Deploy
 bash setup.sh deploy
@@ -127,7 +127,7 @@ Jika webhook tidak bisa dipakai, bisa pakai cronjob:
 crontab -e
 
 # Check update setiap 5 menit
-*/5 * * * * /var/www/html/absensi/auto-pull.sh
+*/5 * * * * /var/www/html/presensi/auto-pull.sh
 ```
 
 ---

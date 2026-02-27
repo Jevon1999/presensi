@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 
 class AuthController extends Controller
 {
@@ -17,7 +16,7 @@ class AuthController extends Controller
 
     public function showLogin()
     {
-        return Inertia::render('Auth/Login');
+        return view('auth.login');
     }
 
     public function login(Request $request)

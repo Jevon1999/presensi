@@ -105,13 +105,6 @@ const summaryCards = computed(() => [
                 <h1 class="text-xl font-bold text-slate-800">Absensi</h1>
                 <p class="text-sm text-slate-400 mt-0.5">Data kehadiran anggota</p>
             </div>
-            <a
-                href="/attendances/report"
-                class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-xl transition-colors"
-            >
-                <span class="material-symbols-rounded text-[18px]">assessment</span>
-                Laporan
-            </a>
         </div>
 
         <!-- Summary Cards -->

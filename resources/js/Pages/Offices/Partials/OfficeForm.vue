@@ -18,19 +18,19 @@ const form = useForm({
 
 // Locations management
 const locations = ref(
-    props.office?.locations?.map(l => ({ ...l })) || [{ alamat: '', latitude: '', longitude: '', radius_meters: 100, is_active: true }]
+    props.office?.locations?.map(l => ({ ...l })) || [{ alamat: '', is_active: true }]
 )
 
 watch(() => props.office, (o) => {
     if (o) {
         form.code = o.code || ''
         form.name = o.name || ''
-        locations.value = o.locations?.map(l => ({ ...l })) || [{ alamat: '', latitude: '', longitude: '', radius_meters: 100, is_active: true }]
+        locations.value = o.locations?.map(l => ({ ...l })) || [{ alamat: '', is_active: true }]
     }
 })
 
 const addLocation = () => {
-    locations.value.push({ alamat: '', latitude: '', longitude: '', radius_meters: 100, is_active: true })
+    locations.value.push({ alamat: '', is_active: true })
 }
 
 const removeLocation = (i) => {
@@ -105,26 +105,6 @@ const submit = () => {
                     placeholder="Alamat"
                     class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-blue-400 outline-none"
                 />
-                <div class="grid grid-cols-3 gap-2">
-                    <input
-                        v-model="loc.latitude"
-                        type="text"
-                        placeholder="Latitude"
-                        class="px-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-blue-400 outline-none"
-                    />
-                    <input
-                        v-model="loc.longitude"
-                        type="text"
-                        placeholder="Longitude"
-                        class="px-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-blue-400 outline-none"
-                    />
-                    <input
-                        v-model.number="loc.radius_meters"
-                        type="number"
-                        placeholder="Radius (m)"
-                        class="px-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-blue-400 outline-none"
-                    />
-                </div>
                 <label class="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" v-model="loc.is_active" class="toggle toggle-xs toggle-primary" />
                     <span class="text-xs">{{ loc.is_active ? 'Aktif' : 'Nonaktif' }}</span>

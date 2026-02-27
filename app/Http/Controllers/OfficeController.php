@@ -36,8 +36,19 @@ class OfficeController extends Controller
                 return redirect()->route('login')->with('error', 'Sesi Anda telah berakhir.');
             }
 
+            if (!$response->successful()) {
+                Log::warning('Offices API error: status=' . $response->status() . ' body=' . $response->body());
+                return Inertia::render('Offices/Index', [
+                    'offices' => [],
+                    'error' => 'Gagal memuat data kantor. (' . $response->status() . ')',
+                ]);
+            }
+
+            $json = $response->json();
+            $offices = $json['data'] ?? (is_array($json) ? $json : []);
+
             return Inertia::render('Offices/Index', [
-                'offices' => $response->json()['data'] ?? [],
+                'offices' => $offices,
             ]);
         } catch (\Exception $e) {
             Log::error('Offices index error: ' . $e->getMessage());
@@ -64,7 +75,7 @@ class OfficeController extends Controller
                 return back()->with('error', 'Gagal menambahkan kantor. (' . $response->status() . ')');
             }
 
-            return back()->with('success', 'Kantor berhasil ditambahkan.');
+            return redirect('/offices')->with('success', 'Kantor berhasil ditambahkan.');
         } catch (\Exception $e) {
             Log::error('Office store error: ' . $e->getMessage());
             return back()->with('error', 'Tidak dapat terhubung ke server.');
@@ -100,7 +111,7 @@ class OfficeController extends Controller
                 return back()->with('error', 'Gagal mengupdate kantor. (' . $response->status() . ')');
             }
 
-            return back()->with('success', 'Kantor berhasil diupdate.');
+            return redirect('/offices')->with('success', 'Kantor berhasil diupdate.');
         } catch (\Exception $e) {
             Log::error('Office update error: ' . $e->getMessage());
             return back()->with('error', 'Tidak dapat terhubung ke server.');
@@ -121,7 +132,7 @@ class OfficeController extends Controller
                 return back()->with('error', $msg);
             }
 
-            return back()->with('success', 'Kantor berhasil dihapus.');
+            return redirect('/offices')->with('success', 'Kantor berhasil dihapus.');
         } catch (\Exception $e) {
             Log::error('Office destroy error: ' . $e->getMessage());
             return back()->with('error', 'Tidak dapat terhubung ke server.');

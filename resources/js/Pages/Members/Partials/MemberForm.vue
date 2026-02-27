@@ -86,13 +86,15 @@ const submit = () => {
 
         <!-- Asal Sekolah -->
         <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Asal Sekolah</label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Asal Sekolah <span class="text-red-400">*</span></label>
             <input
                 v-model="form.asal_sekolah"
                 type="text"
                 placeholder="Nama sekolah / kampus"
                 class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                :class="{ 'border-red-300 bg-red-50': form.errors.asal_sekolah }"
             />
+            <p v-if="form.errors.asal_sekolah" class="text-xs text-red-500 mt-1">{{ form.errors.asal_sekolah }}</p>
         </div>
 
         <!-- Kantor -->
@@ -112,7 +114,7 @@ const submit = () => {
         <!-- Tanggal Mulai -->
         <div class="grid grid-cols-2 gap-3">
             <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Mulai Magang</label>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Mulai Magang <span class="text-red-400">*</span></label>
                 <input
                     v-model="form.tanggal_mulai_magang"
                     type="date"

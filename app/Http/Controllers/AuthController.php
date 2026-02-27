@@ -36,6 +36,14 @@ class AuthController extends Controller
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             Log::error('Login connection error: ' . $e->getMessage());
             return back()->with('error', 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            // Guzzle exception with a response — extract status from the response
+            if ($e->hasResponse()) {
+                $response = new \Illuminate\Http\Client\Response($e->getResponse());
+            } else {
+                Log::error('Login request error (no response): ' . $e->getMessage());
+                return back()->with('error', 'Tidak dapat terhubung ke server.');
+            }
         } catch (\Exception $e) {
             Log::error('Login unexpected error: ' . $e->getMessage());
             return back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.');

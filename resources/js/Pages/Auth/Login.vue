@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Head, useForm, usePage } from '@inertiajs/vue3'
 import Toast from '@/Components/Toast.vue'
 import logo from '../../../images/logo_global.png'
@@ -12,11 +12,26 @@ const form = useForm({
 })
 
 const showPassword = ref(false)
+const loginError = ref('')
+
+// Computed: pick up flash or form-level error
+const errorMessage = computed(() => {
+    return loginError.value || page.props.flash?.error || ''
+})
 
 const submit = () => {
     form.clearErrors()
+    loginError.value = ''
     form.post('/login', {
-        onFinish: () => form.reset('password'),
+        onFinish: () => {
+            form.reset('password')
+            // If there are form errors, show them as inline message too
+            if (form.errors.email) {
+                loginError.value = form.errors.email
+            } else if (form.errors.password) {
+                loginError.value = form.errors.password
+            }
+        },
     })
 }
 </script>
@@ -84,16 +99,13 @@ const submit = () => {
                     class="mb-4"
                 />
 
-                <!-- Flash Error -->
-                <Toast
-                    :message="page.props.flash?.error"
-                    type="error"
-                    :show="!!page.props.flash?.error"
-                    class="mb-4"
-                />
-
                 <!-- Form Card -->
                 <form @submit.prevent="submit" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+                    <!-- Inline Error Alert -->
+                    <div v-if="errorMessage" class="flex items-center gap-2.5 px-3.5 py-3 bg-red-50 border border-red-200 rounded-xl">
+                        <span class="material-symbols-rounded text-red-500 text-[18px] shrink-0">error</span>
+                        <p class="text-sm text-red-700">{{ errorMessage }}</p>
+                    </div>
                     <!-- Email -->
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Email</label>

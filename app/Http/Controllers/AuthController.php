@@ -42,18 +42,25 @@ class AuthController extends Controller
         }
 
         if ($response->status() === 401 || $response->status() === 403) {
-            return back()->with('error', 'Email atau password salah.');
+            $msg = $response->json('message') ?: 'Email atau password salah.';
+            return back()->withErrors(['email' => $msg])->with('error', $msg);
         }
 
         if ($response->status() === 422) {
             $errors = $response->json('errors', []);
             $message = $response->json('message', 'Data tidak valid.');
-            return back()->withErrors($errors)->with('error', $message);
+            // For wrong credentials, show a clear Indonesian message
+            $friendlyMsg = 'Email atau password salah.';
+            if (!empty($errors['email'])) {
+                $friendlyMsg = is_array($errors['email']) ? $errors['email'][0] : $errors['email'];
+            }
+            return back()->withErrors(['email' => $friendlyMsg])->with('error', $friendlyMsg);
         }
 
         if (!$response->successful()) {
             Log::error('Login API error', ['status' => $response->status(), 'body' => $response->body()]);
-            return back()->with('error', 'Gagal login. Server mengembalikan error (' . $response->status() . ').');
+            $msg = 'Gagal login. Server mengembalikan error (' . $response->status() . ').';
+            return back()->with('error', $msg);
         }
 
         $data = $response->json();

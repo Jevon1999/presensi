@@ -70,7 +70,7 @@ class AuthController extends Controller
         $user = $data['user'] ?? $data['data']['user'] ?? $data['data'] ?? null;
 
         if (!$token) {
-            Log::error('Login API response - no token found', $data);
+            Log::error('Login API response - no token found', $data ?? []);
             return back()->with('error', 'Login gagal: tidak menerima token dari server.');
         }
 

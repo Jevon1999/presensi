@@ -6,3 +6,8 @@
 @source '../**/*.blade.php';
 @source '../**/*.vue';
 @source '../**/*.js';
+
+/* Inter font loaded via Google Fonts in app.blade.php */
+@theme {
+    --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}

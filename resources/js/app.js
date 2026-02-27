@@ -4,7 +4,7 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 createInertiaApp({
-    title: (title) => `${title} - Presensi GI`,
+    title: (title) => title ? `${title} - Presensi GI` : 'Presensi GI',
     resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
         return createApp({ render: () => h(App, props) })
@@ -12,6 +12,7 @@ createInertiaApp({
             .mount(el);
     },
     progress: {
-        color: '#4a5568',
+        color: '#3b82f6',
+        showSpinner: false,
     },
 });

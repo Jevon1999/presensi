@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class AuthController extends Controller
 {
@@ -16,7 +18,7 @@ class AuthController extends Controller
 
     public function showLogin()
     {
-        return view('auth.login');
+        return Inertia::render('Auth/Login');
     }
 
     public function login(Request $request)
@@ -26,22 +28,50 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $response = Http::post($this->apiUrl . '/login', [
-            'email' => $request->email,
-            'password' => $request->password,
-        ]);
+        try {
+            $response = Http::timeout(15)->post($this->apiUrl . '/login', [
+                'email' => $request->email,
+                'password' => $request->password,
+            ]);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Login connection error: ' . $e->getMessage());
+            return back()->with('error', 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
+        } catch (\Exception $e) {
+            Log::error('Login unexpected error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.');
+        }
+
+        if ($response->status() === 401 || $response->status() === 403) {
+            return back()->with('error', 'Email atau password salah.');
+        }
+
+        if ($response->status() === 422) {
+            $errors = $response->json('errors', []);
+            $message = $response->json('message', 'Data tidak valid.');
+            return back()->withErrors($errors)->with('error', $message);
+        }
 
         if (!$response->successful()) {
-            return back()->with('error', 'Invalid credentials');
+            Log::error('Login API error', ['status' => $response->status(), 'body' => $response->body()]);
+            return back()->with('error', 'Gagal login. Server mengembalikan error (' . $response->status() . ').');
         }
 
         $data = $response->json();
-        
-        // Store token and user in session
-        session(['auth_token' => $data['token']]);
-        session(['user' => $data['user']]);
 
-        return redirect()->route('dashboard');
+        // Handle different token key names from API
+        $token = $data['token'] ?? $data['access_token'] ?? $data['data']['token'] ?? $data['data']['access_token'] ?? null;
+        $user = $data['user'] ?? $data['data']['user'] ?? $data['data'] ?? null;
+
+        if (!$token) {
+            Log::error('Login API response - no token found', $data);
+            return back()->with('error', 'Login gagal: tidak menerima token dari server.');
+        }
+
+        // Store token and user in session
+        session(['auth_token' => $token]);
+        session(['user' => $user]);
+
+        return redirect()->route('dashboard')->with('success', 'Selamat datang!');
     }
 
     public function logout(Request $request)
@@ -49,12 +79,18 @@ class AuthController extends Controller
         $token = session('auth_token');
 
         if ($token) {
-            Http::withToken($token)->post("{$this->apiUrl}/logout");
+            try {
+                Http::timeout(10)->withToken($token)->post("{$this->apiUrl}/logout");
+            } catch (\Exception $e) {
+                Log::warning('Logout API call failed: ' . $e->getMessage());
+            }
         }
 
         session()->forget(['auth_token', 'user']);
+        session()->invalidate();
+        session()->regenerateToken();
 
-        return redirect()->route('login');
+        return redirect()->route('login')->with('success', 'Berhasil logout.');
     }
 
     public function me(Request $request)

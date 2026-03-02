@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\MemberController;
@@ -9,6 +10,8 @@ use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\BotController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\MemberApplyController;
+use App\Http\Controllers\MemberDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,29 +19,40 @@ use App\Http\Controllers\UserController;
 |--------------------------------------------------------------------------
 */
 
-// Guest routes
+// Guest routes (login & register)
 Route::middleware('guest')->group(function () {
     Route::get('/', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/register', [RegisterController::class, 'showRegister'])->name('register');
+    Route::post('/register', [RegisterController::class, 'register']);
 });
 
 // Authenticated routes
 Route::middleware(['web'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Protected routes - require session with auth_token
+    // --- Routes for any authenticated user (token only) ---
     Route::middleware('token')->group(function () {
+        // Member application flow (role=user, no/rejected member)
+        Route::get('/member/apply', [MemberApplyController::class, 'showApply'])->name('member.apply');
+        Route::post('/member/apply', [MemberApplyController::class, 'submitApply']);
+        Route::get('/member/pending', [MemberApplyController::class, 'showPending'])->name('member.pending');
+    });
 
+    // --- Admin routes (role=admin) ---
+    Route::middleware(['token', 'admin'])->group(function () {
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        // Members CRUD
+        // Members CRUD + approval
         Route::prefix('members')->name('members.')->group(function () {
             Route::get('/', [MemberController::class, 'index'])->name('index');
             Route::post('/', [MemberController::class, 'store'])->name('store');
             Route::get('/{id}', [MemberController::class, 'show'])->name('show');
             Route::put('/{id}', [MemberController::class, 'update'])->name('update');
             Route::delete('/{id}', [MemberController::class, 'destroy'])->name('destroy');
+            Route::put('/{id}/approve', [MemberController::class, 'approve'])->name('approve');
+            Route::put('/{id}/reject', [MemberController::class, 'reject'])->name('reject');
         });
 
         // Attendances
@@ -89,5 +103,12 @@ Route::middleware(['web'])->group(function () {
             Route::post('/broadcast', [BotController::class, 'broadcastMessage'])->name('broadcast');
             Route::get('/screenshot', [BotController::class, 'screenshot'])->name('screenshot');
         });
+    });
+
+    // --- Member routes (role=user with approved member) ---
+    Route::middleware(['token', 'member'])->prefix('member')->group(function () {
+        Route::get('/dashboard', [MemberDashboardController::class, 'dashboard'])->name('member.dashboard');
+        Route::get('/progress', [MemberDashboardController::class, 'progress'])->name('member.progress');
+        Route::get('/report', [MemberDashboardController::class, 'report'])->name('member.report');
     });
 });

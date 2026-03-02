@@ -46,7 +46,7 @@ class MemberController extends Controller
         try {
             $responses = Http::pool(fn ($pool) => [
                 $pool->as('members')->withToken($this->token())->timeout(15)
-                    ->get("{$this->apiUrl}/members", $request->only(['search', 'office_id', 'status_aktif', 'page'])),
+                    ->get("{$this->apiUrl}/members", $request->only(['search', 'office_id', 'status_aktif', 'status', 'page'])),
                 $pool->as('offices')->withToken($this->token())->timeout(15)
                     ->get("{$this->apiUrl}/offices"),
             ]);
@@ -62,14 +62,14 @@ class MemberController extends Controller
             return Inertia::render('Members/Index', [
                 'members' => $membersData,
                 'offices' => $offices,
-                'filters' => $request->only(['search', 'office_id', 'status_aktif']),
+                'filters' => $request->only(['search', 'office_id', 'status_aktif', 'status']),
             ]);
         } catch (\Exception $e) {
             Log::error('Members index error: ' . $e->getMessage());
             return Inertia::render('Members/Index', [
                 'members' => ['data' => [], 'current_page' => 1, 'last_page' => 1, 'total' => 0, 'from' => 0, 'to' => 0, 'links' => []],
                 'offices' => [],
-                'filters' => $request->only(['search', 'office_id', 'status_aktif']),
+                'filters' => $request->only(['search', 'office_id', 'status_aktif', 'status']),
                 'error' => 'Gagal memuat data: ' . $e->getMessage(),
             ]);
         }
@@ -134,6 +134,40 @@ class MemberController extends Controller
             return back()->with('success', 'Anggota berhasil dihapus.');
         } catch (\Exception $e) {
             Log::error('Members destroy error: ' . $e->getMessage());
+            return back()->with('error', 'Tidak dapat terhubung ke server.');
+        }
+    }
+
+    public function approve(Request $request, $id)
+    {
+        try {
+            $response = $this->api()->put("{$this->apiUrl}/members/{$id}/approve");
+
+            if (!$response->successful()) {
+                return $this->handleApiError($response, 'Gagal menyetujui anggota.');
+            }
+
+            return back()->with('success', 'Anggota berhasil disetujui.');
+        } catch (\Exception $e) {
+            Log::error('Members approve error: ' . $e->getMessage());
+            return back()->with('error', 'Tidak dapat terhubung ke server.');
+        }
+    }
+
+    public function reject(Request $request, $id)
+    {
+        try {
+            $response = $this->api()->put("{$this->apiUrl}/members/{$id}/reject", [
+                'rejection_reason' => $request->input('rejection_reason'),
+            ]);
+
+            if (!$response->successful()) {
+                return $this->handleApiError($response, 'Gagal menolak anggota.');
+            }
+
+            return back()->with('success', 'Anggota berhasil ditolak.');
+        } catch (\Exception $e) {
+            Log::error('Members reject error: ' . $e->getMessage());
             return back()->with('error', 'Tidak dapat terhubung ke server.');
         }
     }

@@ -86,7 +86,30 @@ class AuthController extends Controller
         session(['auth_token' => $token]);
         session(['user' => $user]);
 
-        return redirect()->route('dashboard')->with('success', 'Selamat datang!');
+        // Store member data if present
+        $member = $data['member'] ?? $data['data']['member'] ?? null;
+        if ($member) {
+            session(['member' => $member]);
+        }
+
+        // Role-based redirect
+        $role = $user['role'] ?? 'user';
+        if ($role === 'admin') {
+            return redirect()->route('dashboard')->with('success', 'Selamat datang!');
+        }
+
+        // For role=user, redirect based on member status
+        if ($member) {
+            $memberStatus = $member['status'] ?? null;
+            if ($memberStatus === 'approved') {
+                return redirect()->route('member.dashboard')->with('success', 'Selamat datang!');
+            } elseif ($memberStatus === 'pending') {
+                return redirect()->route('member.pending')->with('success', 'Selamat datang!');
+            }
+        }
+
+        // No member or rejected → go to apply page
+        return redirect()->route('member.apply')->with('success', 'Selamat datang!');
     }
 
     public function logout(Request $request)
@@ -101,7 +124,7 @@ class AuthController extends Controller
             }
         }
 
-        session()->forget(['auth_token', 'user']);
+        session()->forget(['auth_token', 'user', 'member']);
         session()->invalidate();
         session()->regenerateToken();
 

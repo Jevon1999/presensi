@@ -27,10 +27,18 @@ const showDeleteConfirm = ref(false)
 const deletingId = ref(null)
 const deleteProcessing = ref(false)
 
+// Confirm reject
+const showRejectDialog = ref(false)
+const rejectingId = ref(null)
+const rejectReason = ref('')
+const rejectProcessing = ref(false)
+const approveProcessing = ref(null)
+
 // Filters
 const search = ref(props.filters.search || '')
 const officeFilter = ref(props.filters.office_id || '')
 const statusFilter = ref(props.filters.status_aktif ?? '')
+const memberStatusFilter = ref(props.filters.status || '')
 
 let debounceTimer = null
 const applyFilters = () => {
@@ -40,6 +48,7 @@ const applyFilters = () => {
             search: search.value || undefined,
             office_id: officeFilter.value || undefined,
             status_aktif: statusFilter.value !== '' ? statusFilter.value : undefined,
+            status: memberStatusFilter.value || undefined,
         }, { preserveState: true, preserveScroll: true })
     }, 400)
 }
@@ -48,10 +57,11 @@ const clearFilters = () => {
     search.value = ''
     officeFilter.value = ''
     statusFilter.value = ''
+    memberStatusFilter.value = ''
     router.get('/members', {}, { preserveState: true })
 }
 
-const hasFilters = computed(() => search.value || officeFilter.value || statusFilter.value !== '')
+const hasFilters = computed(() => search.value || officeFilter.value || statusFilter.value !== '' || memberStatusFilter.value)
 
 // CRUD actions
 const openCreate = () => {
@@ -107,6 +117,47 @@ const formatDate = (d) => {
     if (!d) return '-'
     return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
+
+const handleApprove = (id) => {
+    approveProcessing.value = id
+    router.put(`/members/${id}/approve`, {}, {
+        preserveScroll: true,
+        onFinish: () => { approveProcessing.value = null },
+    })
+}
+
+const openRejectDialog = (id) => {
+    rejectingId.value = id
+    rejectReason.value = ''
+    showRejectDialog.value = true
+}
+
+const doReject = () => {
+    rejectProcessing.value = true
+    router.put(`/members/${rejectingId.value}/reject`, { rejection_reason: rejectReason.value }, {
+        preserveScroll: true,
+        onSuccess: () => { showRejectDialog.value = false },
+        onFinish: () => { rejectProcessing.value = false },
+    })
+}
+
+const statusBadgeClass = (status) => {
+    switch (status) {
+        case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200'
+        case 'approved': return 'bg-green-50 text-green-700 border-green-200'
+        case 'rejected': return 'bg-red-50 text-red-700 border-red-200'
+        default: return 'bg-slate-50 text-slate-600 border-slate-200'
+    }
+}
+
+const statusLabel = (status) => {
+    switch (status) {
+        case 'pending': return 'Pending'
+        case 'approved': return 'Disetujui'
+        case 'rejected': return 'Ditolak'
+        default: return '-'
+    }
+}
 </script>
 
 <template>
@@ -156,6 +207,16 @@ const formatDate = (d) => {
                     <option value="1">Aktif</option>
                     <option value="0">Nonaktif</option>
                 </select>
+                <select
+                    v-model="memberStatusFilter"
+                    @change="applyFilters"
+                    class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white min-w-[130px]"
+                >
+                    <option value="">Semua Pengajuan</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Disetujui</option>
+                    <option value="rejected">Ditolak</option>
+                </select>
                 <button
                     v-if="hasFilters"
                     @click="clearFilters"
@@ -177,6 +238,7 @@ const formatDate = (d) => {
                         <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Asal Sekolah</th>
                         <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Periode</th>
                         <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Status</th>
+                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Pengajuan</th>
                         <th class="text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Aksi</th>
                     </tr>
                 </thead>
@@ -202,8 +264,22 @@ const formatDate = (d) => {
                         <td class="px-4 py-3 text-center">
                             <Badge :status="String(m.status_aktif)" type="member" />
                         </td>
+                        <td class="px-4 py-3 text-center">
+                            <span v-if="m.status" :class="[statusBadgeClass(m.status), 'text-[10px] font-semibold px-2 py-0.5 rounded-full border']">
+                                {{ statusLabel(m.status) }}
+                            </span>
+                            <span v-else class="text-[10px] text-slate-400">-</span>
+                        </td>
                         <td class="px-4 py-3 text-right">
                             <div class="flex items-center justify-end gap-1">
+                                <template v-if="m.status === 'pending'">
+                                    <button @click="handleApprove(m.id)" :disabled="approveProcessing === m.id" class="p-1.5 rounded-lg hover:bg-green-50 text-slate-400 hover:text-green-600 transition-colors" title="Setujui">
+                                        <span class="material-symbols-rounded text-[18px]">check_circle</span>
+                                    </button>
+                                    <button @click="openRejectDialog(m.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Tolak">
+                                        <span class="material-symbols-rounded text-[18px]">cancel</span>
+                                    </button>
+                                </template>
                                 <button @click="openEdit(m)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
                                     <span class="material-symbols-rounded text-[18px]">edit</span>
                                 </button>
@@ -254,6 +330,16 @@ const formatDate = (d) => {
                         <span class="font-medium text-slate-700">{{ formatDate(m.tanggal_mulai_magang) }} — {{ formatDate(m.tanggal_selesai_magang) }}</span>
                     </div>
                 </div>
+                <div v-if="m.status === 'pending'" class="flex gap-2 pt-2 border-t border-slate-100 mb-2">
+                    <button @click="handleApprove(m.id)" :disabled="approveProcessing === m.id" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-xl transition-colors">
+                        <span class="material-symbols-rounded text-[16px]">check_circle</span>
+                        Setujui
+                    </button>
+                    <button @click="openRejectDialog(m.id)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
+                        <span class="material-symbols-rounded text-[16px]">cancel</span>
+                        Tolak
+                    </button>
+                </div>
                 <div class="flex gap-2 pt-2 border-t border-slate-100">
                     <button @click="openEdit(m)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors">
                         <span class="material-symbols-rounded text-[16px]">edit</span>
@@ -290,5 +376,26 @@ const formatDate = (d) => {
             @confirm="doDelete"
             @cancel="showDeleteConfirm = false"
         />
+
+        <!-- Reject Dialog -->
+        <ConfirmDialog
+            :show="showRejectDialog"
+            title="Tolak Pengajuan"
+            message="Berikan alasan penolakan (opsional):"
+            :processing="rejectProcessing"
+            confirmText="Tolak"
+            confirmClass="bg-red-500 hover:bg-red-600"
+            @confirm="doReject"
+            @cancel="showRejectDialog = false"
+        >
+            <template #content>
+                <textarea
+                    v-model="rejectReason"
+                    rows="3"
+                    placeholder="Alasan penolakan..."
+                    class="w-full mt-2 px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-red-400 outline-none resize-none"
+                />
+            </template>
+        </ConfirmDialog>
     </div>
 </template>

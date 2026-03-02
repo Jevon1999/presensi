@@ -1,48 +1,44 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { Head, useForm, usePage } from '@inertiajs/vue3'
+import { Head, useForm, usePage, Link } from '@inertiajs/vue3'
 import Toast from '@/Components/Toast.vue'
 import logo from '../../../images/logo_global.png'
 
 const page = usePage()
 
 const form = useForm({
+    name: '',
     email: '',
     password: '',
+    password_confirmation: '',
 })
 
 const showPassword = ref(false)
-const loginError = ref('')
+const registerError = ref('')
 
-// Computed: pick up flash or form-level error
 const errorMessage = computed(() => {
-    return loginError.value || page.props.flash?.error || ''
+    return registerError.value || page.props.flash?.error || ''
 })
 
 const submit = () => {
     form.clearErrors()
-    loginError.value = ''
-    form.post('/login', {
+    registerError.value = ''
+    form.post('/register', {
         onFinish: () => {
-            form.reset('password')
-            // If there are form errors, show them as inline message too
-            if (form.errors.email) {
-                loginError.value = form.errors.email
-            } else if (form.errors.password) {
-                loginError.value = form.errors.password
-            }
+            if (form.errors.name) registerError.value = form.errors.name
+            else if (form.errors.email) registerError.value = form.errors.email
+            else if (form.errors.password) registerError.value = form.errors.password
         },
     })
 }
 </script>
 
 <template>
-    <Head title="Login" />
+    <Head title="Register" />
 
     <div class="min-h-dvh flex bg-slate-50">
         <!-- Left Panel — branding (hidden on mobile) -->
         <div class="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 items-center justify-center p-12">
-            <!-- Decorative shapes -->
             <div class="absolute inset-0 overflow-hidden">
                 <div class="absolute -top-24 -left-24 w-96 h-96 bg-white/5 rounded-full"></div>
                 <div class="absolute -bottom-32 -right-32 w-[500px] h-[500px] bg-white/5 rounded-full"></div>
@@ -56,27 +52,26 @@ const submit = () => {
                     <img :src="logo" alt="Global Intermedia" class="w-14 h-14 object-contain" />
                 </div>
                 <h1 class="text-3xl xl:text-4xl font-bold text-white mb-3 leading-tight">Presensi GI</h1>
-                <p class="text-blue-100/80 text-sm leading-relaxed">Sistem presensi & manajemen magang untuk memantau kehadiran dan progres peserta magang secara real-time.</p>
+                <p class="text-blue-100/80 text-sm leading-relaxed">Daftar akun untuk mengajukan pendaftaran magang di Global Intermedia.</p>
 
-                <!-- Feature highlights -->
                 <div class="mt-10 space-y-3 text-left">
                     <div class="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 ring-1 ring-white/10">
-                        <span class="material-symbols-rounded text-white/90 text-[20px]">fact_check</span>
-                        <span class="text-sm text-white/90">Presensi otomatis via WhatsApp</span>
+                        <span class="material-symbols-rounded text-white/90 text-[20px]">person_add</span>
+                        <span class="text-sm text-white/90">Buat akun dengan nama & email</span>
                     </div>
                     <div class="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 ring-1 ring-white/10">
-                        <span class="material-symbols-rounded text-white/90 text-[20px]">assessment</span>
-                        <span class="text-sm text-white/90">Laporan & rekap kehadiran</span>
+                        <span class="material-symbols-rounded text-white/90 text-[20px]">assignment</span>
+                        <span class="text-sm text-white/90">Ajukan pendaftaran magang</span>
                     </div>
                     <div class="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 ring-1 ring-white/10">
-                        <span class="material-symbols-rounded text-white/90 text-[20px]">trending_up</span>
-                        <span class="text-sm text-white/90">Monitoring progres harian</span>
+                        <span class="material-symbols-rounded text-white/90 text-[20px]">check_circle</span>
+                        <span class="text-sm text-white/90">Tunggu persetujuan admin</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Panel — login form -->
+        <!-- Right Panel — register form -->
         <div class="flex-1 flex items-center justify-center px-5 py-8">
             <div class="w-full max-w-sm">
                 <!-- Mobile logo -->
@@ -86,12 +81,12 @@ const submit = () => {
                     </div>
                     <h2 class="text-2xl font-bold text-slate-800">
                         <span class="lg:hidden">Presensi GI</span>
-                        <span class="hidden lg:inline">Selamat Datang</span>
+                        <span class="hidden lg:inline">Buat Akun</span>
                     </h2>
-                    <p class="text-sm text-slate-400 mt-1.5">Masuk ke dashboard untuk melanjutkan</p>
+                    <p class="text-sm text-slate-400 mt-1.5">Daftar akun baru untuk sistem presensi</p>
                 </div>
 
-                <!-- Flash Success -->
+                <!-- Flash -->
                 <Toast
                     :message="page.props.flash?.success"
                     type="success"
@@ -101,11 +96,30 @@ const submit = () => {
 
                 <!-- Form Card -->
                 <form @submit.prevent="submit" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
-                    <!-- Inline Error Alert -->
+                    <!-- Error Alert -->
                     <div v-if="errorMessage" class="flex items-center gap-2.5 px-3.5 py-3 bg-red-50 border border-red-200 rounded-xl">
                         <span class="material-symbols-rounded text-red-500 text-[18px] shrink-0">error</span>
                         <p class="text-sm text-red-700">{{ errorMessage }}</p>
                     </div>
+
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Nama Lengkap</label>
+                        <div class="relative">
+                            <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">person</span>
+                            <input
+                                v-model="form.name"
+                                type="text"
+                                required
+                                autofocus
+                                placeholder="Nama lengkap Anda"
+                                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                :class="{ 'border-red-300 bg-red-50': form.errors.name }"
+                            />
+                        </div>
+                        <p v-if="form.errors.name" class="text-xs text-red-500 mt-1">{{ form.errors.name }}</p>
+                    </div>
+
                     <!-- Email -->
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Email</label>
@@ -115,7 +129,6 @@ const submit = () => {
                                 v-model="form.email"
                                 type="email"
                                 required
-                                autofocus
                                 placeholder="nama@email.com"
                                 class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                                 :class="{ 'border-red-300 bg-red-50': form.errors.email }"
@@ -133,19 +146,30 @@ const submit = () => {
                                 v-model="form.password"
                                 :type="showPassword ? 'text' : 'password'"
                                 required
-                                placeholder="Masukkan password"
+                                placeholder="Minimal 8 karakter"
                                 class="w-full pl-10 pr-11 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                                 :class="{ 'border-red-300 bg-red-50': form.errors.password }"
                             />
-                            <button
-                                type="button"
-                                @click="showPassword = !showPassword"
-                                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                            >
+                            <button type="button" @click="showPassword = !showPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
                                 <span class="material-symbols-rounded text-[18px]">{{ showPassword ? 'visibility_off' : 'visibility' }}</span>
                             </button>
                         </div>
                         <p v-if="form.errors.password" class="text-xs text-red-500 mt-1">{{ form.errors.password }}</p>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Konfirmasi Password</label>
+                        <div class="relative">
+                            <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">lock</span>
+                            <input
+                                v-model="form.password_confirmation"
+                                :type="showPassword ? 'text' : 'password'"
+                                required
+                                placeholder="Ulangi password"
+                                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                            />
+                        </div>
                     </div>
 
                     <!-- Submit -->
@@ -159,20 +183,15 @@ const submit = () => {
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                             </svg>
-                            <span v-if="!form.processing" class="material-symbols-rounded text-[18px]">login</span>
-                            <span>{{ form.processing ? 'Memproses...' : 'Masuk' }}</span>
+                            {{ form.processing ? 'Mendaftar...' : 'Daftar' }}
                         </button>
                     </div>
-
-                    <!-- Register Link -->
-                    <p class="text-center text-sm text-slate-500 mt-4">
-                        Belum punya akun?
-                        <a href="/register" class="font-semibold text-blue-500 hover:text-blue-600 transition-colors">Daftar</a>
-                    </p>
                 </form>
 
-                <p class="text-center text-[11px] text-slate-400 mt-8">
-                    &copy; {{ new Date().getFullYear() }} Global Intermedia &middot; Attendance System
+                <!-- Login link -->
+                <p class="mt-6 text-center text-sm text-slate-400">
+                    Sudah punya akun?
+                    <Link href="/" class="font-semibold text-blue-500 hover:text-blue-600 transition-colors">Masuk</Link>
                 </p>
             </div>
         </div>

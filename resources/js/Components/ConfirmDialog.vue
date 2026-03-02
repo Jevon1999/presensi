@@ -36,8 +36,9 @@ const emit = defineEmits(['confirm', 'cancel'])
                             <span class="material-symbols-rounded text-red-500 text-[24px]">warning</span>
                         </div>
                         <h3 class="text-center font-bold text-lg mb-2">{{ title }}</h3>
-                        <p class="text-center text-sm text-slate-500 mb-6">{{ message }}</p>
-                        <div class="flex gap-3">
+                        <p class="text-center text-sm text-slate-500 mb-2">{{ message }}</p>
+                        <slot name="content" />
+                        <div class="flex gap-3 mt-4">
                             <button
                                 @click="$emit('cancel')"
                                 class="flex-1 py-2.5 text-sm font-medium rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"

@@ -147,10 +147,11 @@ class MemberController extends Controller
                 return $this->handleApiError($response, 'Gagal menyetujui anggota.');
             }
 
-            return back()->with('success', 'Anggota berhasil disetujui.');
+            return redirect()->route('members.index', $request->only(['search', 'office_id', 'status_aktif', 'status']))
+                ->with('success', 'Anggota berhasil disetujui.');
         } catch (\Exception $e) {
             Log::error('Members approve error: ' . $e->getMessage());
-            return back()->with('error', 'Tidak dapat terhubung ke server.');
+            return redirect()->route('members.index')->with('error', 'Tidak dapat terhubung ke server.');
         }
     }
 
@@ -165,10 +166,11 @@ class MemberController extends Controller
                 return $this->handleApiError($response, 'Gagal menolak anggota.');
             }
 
-            return back()->with('success', 'Anggota berhasil ditolak.');
+            return redirect()->route('members.index', $request->only(['search', 'office_id', 'status_aktif', 'status']))
+                ->with('success', 'Anggota berhasil ditolak.');
         } catch (\Exception $e) {
             Log::error('Members reject error: ' . $e->getMessage());
-            return back()->with('error', 'Tidak dapat terhubung ke server.');
+            return redirect()->route('members.index')->with('error', 'Tidak dapat terhubung ke server.');
         }
     }
 }

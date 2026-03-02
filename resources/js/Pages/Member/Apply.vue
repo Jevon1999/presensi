@@ -35,6 +35,21 @@ const submit = () => {
 const logout = () => {
     router.post('/logout')
 }
+
+/**
+ * Auto-format phone: 08xx → +628xx, 628xx → +628xx
+ */
+const formatPhone = () => {
+    let v = form.no_hp.replace(/[^\d+]/g, '')
+    if (v.startsWith('08')) {
+        v = '+62' + v.slice(1)
+    } else if (v.startsWith('628')) {
+        v = '+' + v
+    } else if (v.startsWith('8') && v.length >= 9) {
+        v = '+62' + v
+    }
+    form.no_hp = v
+}
 </script>
 
 <template>
@@ -116,7 +131,7 @@ const logout = () => {
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Nomor HP (WhatsApp)</label>
                         <div class="relative">
                             <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">phone</span>
-                            <input v-model="form.no_hp" type="text" required placeholder="+628xxxxxxxxxx"
+                            <input v-model="form.no_hp" @blur="formatPhone" type="text" required placeholder="+628xxxxxxxxxx"
                                 class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                                 :class="{ 'border-red-300 bg-red-50': form.errors.no_hp }" />
                         </div>

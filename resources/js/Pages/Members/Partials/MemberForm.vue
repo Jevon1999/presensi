@@ -39,6 +39,21 @@ watch(() => props.member, (m) => {
 const submit = () => {
     emit('submit', form)
 }
+
+/**
+ * Auto-format phone: 08xx → +628xx, 628xx → +628xx
+ */
+const formatPhone = () => {
+    let v = form.no_hp.replace(/[^\d+]/g, '')
+    if (v.startsWith('08')) {
+        v = '+62' + v.slice(1)
+    } else if (v.startsWith('628')) {
+        v = '+' + v
+    } else if (v.startsWith('8') && v.length >= 9) {
+        v = '+62' + v
+    }
+    form.no_hp = v
+}
 </script>
 
 <template>
@@ -61,8 +76,9 @@ const submit = () => {
             <label class="block text-xs font-semibold text-slate-600 mb-1.5">No. HP <span class="text-red-400">*</span></label>
             <input
                 v-model="form.no_hp"
+                @blur="formatPhone"
                 type="text"
-                placeholder="08xxxxxxxxxx"
+                placeholder="+628xxxxxxxxxx"
                 class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                 :class="{ 'border-red-300 bg-red-50': form.errors.no_hp }"
             />

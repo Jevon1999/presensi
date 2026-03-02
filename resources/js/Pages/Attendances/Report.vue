@@ -79,40 +79,47 @@ const formatTime = (t) => t || '-'
 
         <!-- Filters -->
         <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
-            <div class="flex flex-col sm:flex-row gap-3">
-                <div class="flex items-center gap-2">
-                    <input
-                        v-model="startDate"
-                        type="date"
-                        class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                    />
-                    <span class="text-xs text-slate-400">s/d</span>
-                    <input
-                        v-model="endDate"
-                        type="date"
-                        class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                    />
+            <div class="flex flex-col gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5 sm:hidden">Tanggal Mulai</label>
+                        <input
+                            v-model="startDate"
+                            type="date"
+                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5 sm:hidden">Tanggal Akhir</label>
+                        <input
+                            v-model="endDate"
+                            type="date"
+                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                        />
+                    </div>
                 </div>
+                <div class="flex flex-col sm:flex-row gap-3">
                 <select
                     v-model="officeFilter"
-                    class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white min-w-[140px]"
+                    class="w-full sm:w-auto px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white sm:min-w-[140px]"
                 >
                     <option value="">Semua Kantor</option>
                     <option v-for="o in offices" :key="o.id" :value="o.id">{{ o.name }}</option>
                 </select>
                 <select
                     v-model="memberFilter"
-                    class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white min-w-[160px]"
+                    class="w-full sm:w-auto px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white sm:min-w-[160px]"
                 >
                     <option value="">Semua Anggota</option>
                     <option v-for="m in members" :key="m.id" :value="m.id">{{ m.nama_lengkap }}</option>
                 </select>
                 <button
                     @click="applyFilters"
-                    class="px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors"
+                    class="w-full sm:w-auto px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors"
                 >
                     Tampilkan
                 </button>
+                </div>
             </div>
         </div>
 

@@ -31,7 +31,15 @@ const navItems = [
 ]
 
 const currentPath = computed(() => page.url)
-const isActive = (match) => currentPath.value.includes(match)
+const isActive = (match) => {
+    // For paths starting with /, require exact start match to prevent collision
+    if (match.startsWith('/')) {
+        // Exact match or starts with match followed by /
+        return currentPath.value === match || currentPath.value.startsWith(match + '/')
+    }
+    // For other patterns (like 'dashboard', 'bot'), use includes
+    return currentPath.value.includes(match)
+}
 
 // Flash/toast state
 const showSuccess = ref(false)

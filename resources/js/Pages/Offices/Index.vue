@@ -11,6 +11,7 @@ defineOptions({ layout: AuthenticatedLayout })
 
 const props = defineProps({
     offices: { type: Array, default: () => [] },
+    error: { type: String, default: null },
 })
 
 // Panel state
@@ -28,6 +29,9 @@ const expandedId = ref(null)
 const toggleExpand = (id) => {
     expandedId.value = expandedId.value === id ? null : id
 }
+
+// Loading state - show loading if no data and no error (initial load)
+const isLoading = computed(() => !props.offices.length && !props.error)
 
 // CRUD
 const openCreate = () => {
@@ -87,6 +91,15 @@ const doDelete = () => {
 
 <template>
     <div>
+        <!-- Error Alert -->
+        <div v-if="error" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+            <span class="material-symbols-rounded text-red-500 text-[20px]">error</span>
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-red-800">Gagal Memuat Data</p>
+                <p class="text-xs text-red-600 mt-1">{{ error }}</p>
+            </div>
+        </div>
+
         <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
@@ -104,7 +117,20 @@ const doDelete = () => {
 
         <!-- Table (Desktop) -->
         <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hidden lg:block">
-            <table v-if="offices.length" class="w-full">
+            <!-- Loading Skeleton -->
+            <div v-if="isLoading" class="p-8">
+                <div class="animate-pulse space-y-4">
+                    <div v-for="i in 3" :key="'skeleton-' + i" class="flex items-center gap-4">
+                        <div class="h-8 bg-slate-200 rounded w-20"></div>
+                        <div class="h-8 bg-slate-200 rounded flex-1"></div>
+                        <div class="h-8 bg-slate-200 rounded w-16"></div>
+                        <div class="h-8 bg-slate-200 rounded w-16"></div>
+                        <div class="h-8 bg-slate-200 rounded w-24"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <table v-else-if="offices.length" class="w-full">
                 <thead>
                     <tr class="border-b border-slate-100">
                         <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kode</th>
@@ -163,12 +189,27 @@ const doDelete = () => {
                     </template>
                 </tbody>
             </table>
-            <EmptyState v-else icon="apartment" title="Belum ada kantor" description="Tambahkan kantor pertama untuk memulai." />
+            <EmptyState v-else-if="!isLoading" icon="apartment" title="Belum ada kantor" description="Tambahkan kantor pertama untuk memulai." />
         </div>
 
         <!-- Cards (Mobile) -->
         <div class="lg:hidden space-y-3">
+            <!-- Loading Skeleton (Mobile) -->
+            <div v-if="isLoading" class="space-y-3">
+                <div v-for="i in 3" :key="'mobile-skeleton-' + i" class="bg-white rounded-2xl border border-slate-200 p-4 animate-pulse">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex-1">
+                            <div class="h-5 bg-slate-200 rounded w-16 mb-2"></div>
+                            <div class="h-4 bg-slate-200 rounded w-32"></div>
+                        </div>
+                        <div class="h-8 bg-slate-200 rounded w-12"></div>
+                    </div>
+                    <div class="h-10 bg-slate-200 rounded"></div>
+                </div>
+            </div>
+            
             <div
+                v-else
                 v-for="o in offices"
                 :key="'card-' + o.id"
                 class="bg-white rounded-2xl border border-slate-200 p-4"
@@ -205,7 +246,7 @@ const doDelete = () => {
                     </button>
                 </div>
             </div>
-            <EmptyState v-if="!offices.length" icon="apartment" title="Belum ada kantor" description="Tambahkan kantor pertama untuk memulai." />
+            <EmptyState v-if="!offices.length && !isLoading" icon="apartment" title="Belum ada kantor" description="Tambahkan kantor pertama untuk memulai." />
         </div>
 
         <!-- Form Panel -->

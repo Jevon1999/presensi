@@ -22,6 +22,7 @@ const form = useForm({
     office_id: '',
     jenis_kelamin: '',
     asal_sekolah: '',
+    jurusan: '',
     tanggal_mulai_magang: '',
     tanggal_selesai_magang: '',
 })
@@ -176,6 +177,18 @@ const formatPhone = () => {
                                 :class="{ 'border-red-300 bg-red-50': form.errors.asal_sekolah }" />
                         </div>
                         <p v-if="form.errors.asal_sekolah" class="text-xs text-red-500 mt-1">{{ form.errors.asal_sekolah }}</p>
+                    </div>
+
+                    <!-- Jurusan -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jurusan</label>
+                        <div class="relative">
+                            <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">menu_book</span>
+                            <input v-model="form.jurusan" type="text" placeholder="Contoh: Teknik Informatika"
+                                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                :class="{ 'border-red-300 bg-red-50': form.errors.jurusan }" />
+                        </div>
+                        <p v-if="form.errors.jurusan" class="text-xs text-red-500 mt-1">{{ form.errors.jurusan }}</p>
                     </div>
 
                     <!-- Tanggal Mulai -->

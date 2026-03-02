@@ -17,6 +17,7 @@ const form = useForm({
     no_hp: props.member?.no_hp || '',
     jenis_kelamin: props.member?.jenis_kelamin || 'L',
     asal_sekolah: props.member?.asal_sekolah || '',
+    jurusan: props.member?.jurusan || '',
     office_id: props.member?.office_id || '',
     tanggal_mulai_magang: props.member?.tanggal_mulai_magang || '',
     tanggal_selesai_magang: props.member?.tanggal_selesai_magang || '',
@@ -29,6 +30,7 @@ watch(() => props.member, (m) => {
         form.no_hp = m.no_hp || ''
         form.jenis_kelamin = m.jenis_kelamin || 'L'
         form.asal_sekolah = m.asal_sekolah || ''
+        form.jurusan = m.jurusan || ''
         form.office_id = m.office_id || ''
         form.tanggal_mulai_magang = m.tanggal_mulai_magang || ''
         form.tanggal_selesai_magang = m.tanggal_selesai_magang || ''
@@ -111,6 +113,19 @@ const formatPhone = () => {
                 :class="{ 'border-red-300 bg-red-50': form.errors.asal_sekolah }"
             />
             <p v-if="form.errors.asal_sekolah" class="text-xs text-red-500 mt-1">{{ form.errors.asal_sekolah }}</p>
+        </div>
+
+        <!-- Jurusan -->
+        <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jurusan</label>
+            <input
+                v-model="form.jurusan"
+                type="text"
+                placeholder="Contoh: Teknik Informatika"
+                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                :class="{ 'border-red-300 bg-red-50': form.errors.jurusan }"
+            />
+            <p v-if="form.errors.jurusan" class="text-xs text-red-500 mt-1">{{ form.errors.jurusan }}</p>
         </div>
 
         <!-- Kantor -->

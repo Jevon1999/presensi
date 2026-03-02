@@ -21,24 +21,38 @@ const closeSidebar = () => { sidebarOpen.value = false }
 
 // Navigation items
 const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: 'grid_view', match: 'dashboard' },
+    { name: 'Dashboard', href: '/dashboard', icon: 'grid_view', match: '/dashboard' },
     { name: 'Absensi', href: '/attendances', icon: 'fact_check', match: '/attendances' },
-    { name: 'Laporan', href: '/attendances/report', icon: 'assessment', match: 'report' },
-    { name: 'Members', href: '/members', icon: 'group', match: 'members' },
-    { name: 'Progress', href: '/progresses', icon: 'trending_up', match: 'progresses' },
-    { name: 'Kantor', href: '/offices', icon: 'apartment', match: 'offices' },
-    { name: 'Bot WA', href: '/bot/config', icon: 'smart_toy', match: 'bot' },
+    { name: 'Laporan', href: '/attendances/report', icon: 'assessment', match: '/attendances/report' },
+    { name: 'Members', href: '/members', icon: 'group', match: '/members' },
+    { name: 'Progress', href: '/progresses', icon: 'trending_up', match: '/progresses' },
+    { name: 'Kantor', href: '/offices', icon: 'apartment', match: '/offices' },
+    { name: 'Bot WA', href: '/bot/config', icon: 'smart_toy', match: '/bot' },
 ]
 
 const currentPath = computed(() => page.url)
 const isActive = (match) => {
-    // For paths starting with /, require exact start match to prevent collision
+    const path = currentPath.value
+    
+    // Exact match first (highest priority)
+    if (path === match) return true
+    
+    // Check if there's a more specific route that matches
+    // If yes, this is not the active route
+    const hasMoreSpecific = navItems.some(item => 
+        item.match !== match && 
+        item.match.startsWith(match + '/') && 
+        (path === item.match || path.startsWith(item.match + '/'))
+    )
+    if (hasMoreSpecific) return false
+    
+    // Prefix match for sub-routes (e.g., /attendances/123)
     if (match.startsWith('/')) {
-        // Exact match or starts with match followed by /
-        return currentPath.value === match || currentPath.value.startsWith(match + '/')
+        return path.startsWith(match + '/')
     }
-    // For other patterns (like 'dashboard', 'bot'), use includes
-    return currentPath.value.includes(match)
+    
+    // For other patterns, use includes
+    return path.includes(match)
 }
 
 // Flash/toast state

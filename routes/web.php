@@ -8,6 +8,7 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\BotController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,6 +66,15 @@ Route::middleware(['web'])->group(function () {
             Route::get('/{id}', [OfficeController::class, 'show'])->name('show');
             Route::put('/{id}', [OfficeController::class, 'update'])->name('update');
             Route::delete('/{id}', [OfficeController::class, 'destroy'])->name('destroy');
+        });
+
+        // Users CRUD (Admin Management)
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/', [UserController::class, 'index'])->name('index');
+            Route::post('/', [UserController::class, 'store'])->name('store');
+            Route::get('/{id}', [UserController::class, 'show'])->name('show');
+            Route::put('/{id}', [UserController::class, 'update'])->name('update');
+            Route::delete('/{id}', [UserController::class, 'destroy'])->name('destroy');
         });
 
         // Bot Configuration (WAHA proxy)

@@ -14,6 +14,8 @@ const form = useForm({
     reminder_time: props.config?.reminder_time || '07:00',
     checkout_reminder_enabled: props.config?.checkout_reminder_enabled ?? false,
     checkout_reminder_time: props.config?.checkout_reminder_time || '17:00',
+    check_in_late_threshold: props.config?.check_in_late_threshold || '09:00',
+    require_late_reason: props.config?.require_late_reason ?? true,
 })
 
 watch(() => props.config, (c) => {
@@ -25,6 +27,8 @@ watch(() => props.config, (c) => {
         form.reminder_time = c.reminder_time || '07:00'
         form.checkout_reminder_enabled = c.checkout_reminder_enabled ?? false
         form.checkout_reminder_time = c.checkout_reminder_time || '17:00'
+        form.check_in_late_threshold = c.check_in_late_threshold || '09:00'
+        form.require_late_reason = c.require_late_reason ?? true
     }
 }, { immediate: true })
 
@@ -107,6 +111,32 @@ const save = () => {
                         type="time"
                         class="px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none"
                     />
+                </div>
+            </div>
+
+            <!-- Late Check-In Threshold -->
+            <div class="bg-amber-50 rounded-xl p-4 space-y-3">
+                <div>
+                    <p class="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+                        <span class="material-symbols-rounded text-[16px] text-amber-500">schedule</span>
+                        Batas Jam Terlambat
+                    </p>
+                    <p class="text-xs text-slate-400 mt-0.5">Check-in setelah jam ini dianggap terlambat</p>
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-500 mb-1">Jam Batas Telat</label>
+                    <input
+                        v-model="form.check_in_late_threshold"
+                        type="time"
+                        class="px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:border-amber-400 outline-none"
+                    />
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-slate-700">Wajib Isi Alasan</p>
+                        <p class="text-xs text-slate-400">Harus kirim alasan jika terlambat</p>
+                    </div>
+                    <input type="checkbox" v-model="form.require_late_reason" class="toggle toggle-sm toggle-amber" />
                 </div>
             </div>
 

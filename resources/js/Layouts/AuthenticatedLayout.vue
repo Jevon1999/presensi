@@ -27,33 +27,19 @@ const navItems = [
     { name: 'Members', href: '/members', icon: 'group', match: '/members' },
     { name: 'Progress', href: '/progresses', icon: 'trending_up', match: '/progresses' },
     { name: 'Kantor', href: '/offices', icon: 'apartment', match: '/offices' },
+    { name: 'Users', href: '/users', icon: 'manage_accounts', match: '/users' },
     { name: 'Bot WA', href: '/bot/config', icon: 'smart_toy', match: '/bot' },
 ]
 
-const currentPath = computed(() => page.url)
-const isActive = (match) => {
+const currentPath = computed(() => page.url.split('?')[0])
+const activeMatch = computed(() => {
     const path = currentPath.value
-    
-    // Exact match first (highest priority)
-    if (path === match) return true
-    
-    // Check if there's a more specific route that matches
-    // If yes, this is not the active route
-    const hasMoreSpecific = navItems.some(item => 
-        item.match !== match && 
-        item.match.startsWith(match + '/') && 
-        (path === item.match || path.startsWith(item.match + '/'))
-    )
-    if (hasMoreSpecific) return false
-    
-    // Prefix match for sub-routes (e.g., /attendances/123)
-    if (match.startsWith('/')) {
-        return path.startsWith(match + '/')
-    }
-    
-    // For other patterns, use includes
-    return path.includes(match)
-}
+    // Find the longest matching navItem prefix for the current path
+    return navItems
+        .filter(item => path === item.match || path.startsWith(item.match + '/'))
+        .sort((a, b) => b.match.length - a.match.length)[0]?.match || null
+})
+const isActive = (match) => activeMatch.value === match
 
 // Flash/toast state
 const showSuccess = ref(false)

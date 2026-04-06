@@ -5,7 +5,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import FormPanel from '@/Components/FormPanel.vue'
 import ConfirmDialog from '@/Components/ConfirmDialog.vue'
 import Pagination from '@/Components/Pagination.vue'
-import Badge from '@/Components/Badge.vue'
 import EmptyState from '@/Components/EmptyState.vue'
 import UserForm from './Partials/UserForm.vue'
 
@@ -194,16 +193,20 @@ const doDelete = () => {
                         </td>
                         <td class="px-4 py-3 text-sm text-slate-600">{{ u.email }}</td>
                         <td class="px-4 py-3 text-center">
-                            <Badge
-                                :variant="u.role === 'admin' ? 'purple' : 'blue'"
-                                :label="u.role === 'admin' ? 'Admin' : 'User'"
-                            />
+                            <span
+                                :class="u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'"
+                                class="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
+                            >
+                                {{ u.role === 'admin' ? 'Admin' : 'User' }}
+                            </span>
                         </td>
                         <td class="px-4 py-3 text-center">
-                            <Badge
-                                :variant="u.is_active ? 'green' : 'red'"
-                                :label="u.is_active ? 'Aktif' : 'Nonaktif'"
-                            />
+                            <span
+                                :class="u.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'"
+                                class="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
+                            >
+                                {{ u.is_active ? 'Aktif' : 'Nonaktif' }}
+                            </span>
                         </td>
                         <td class="px-4 py-3 text-right">
                             <div class="flex items-center justify-end gap-1">
@@ -253,27 +256,21 @@ const doDelete = () => {
                             <p class="text-xs text-slate-400">{{ u.email }}</p>
                         </div>
                     </div>
-                    <Badge
-                        :variant="u.role === 'admin' ? 'purple' : 'blue'"
-                        :label="u.role === 'admin' ? 'Admin' : 'User'"
-                    />
+                    <span
+                        :class="u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'"
+                        class="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
+                    >
+                        {{ u.role === 'admin' ? 'Admin' : 'User' }}
+                    </span>
                 </div>
 
                 <div class="flex items-center justify-between mb-3">
-                    <Badge
-                        :variant="u.is_active ? 'green' : 'red'"
-                        :label="u.is_active ? 'Aktif' : 'Nonaktif'"
-                    />
-                </div>
-
-                <div class="flex gap-2 pt-2 border-t border-slate-100">
-                    <button @click="openEdit(u)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors">
-                        <span class="material-symbols-rounded text-[16px]">edit</span>
-                        Edit
-                    </button>
-                    <button @click="confirmDelete(u.id)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
-                        <span class="material-symbols-rounded text-[16px]">delete</span>
-                        Hapus
+                    <span
+                        :class="u.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'"
+                        class="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
+                    >
+                        {{ u.is_active ? 'Aktif' : 'Nonaktif' }}
+                    </span>
                     </button>
                 </div>
             </div>

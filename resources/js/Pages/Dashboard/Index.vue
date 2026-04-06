@@ -214,11 +214,11 @@ const statusColor = (status) => {
                         class="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors"
                     >
                         <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 text-[10px] font-bold shrink-0">
-                            {{ ((member.nama_lengkap || member.user?.name || member.name || '?')[0] || '?').toUpperCase() }}
+                            {{ (((member.nama_lengkap || member.nama || member.name || member.user?.name || '?')[0]) || '?').toUpperCase() }}
                         </div>
                         <div class="min-w-0">
-                            <p class="text-sm font-medium truncate">{{ member.nama_lengkap || member.user?.name || member.name || '-' }}</p>
-                            <p class="text-[11px] text-slate-400 truncate">{{ member.office?.name || member.asal_sekolah || '-' }}</p>
+                            <p class="text-sm font-medium truncate">{{ member.nama_lengkap || member.nama || member.name || member.user?.name || '-' }}</p>
+                            <p class="text-[11px] text-slate-400 truncate">{{ member.office?.name || member.asal_sekolah || member.jabatan || member.position || '-' }}</p>
                         </div>
                     </div>
                 </div>
@@ -246,19 +246,19 @@ const statusColor = (status) => {
                     class="p-4 flex items-center gap-3"
                 >
                     <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold shrink-0">
-                        {{ ((att.member?.nama_lengkap || att.member?.user?.name || att.member?.name || '?')[0] || '?').toUpperCase() }}
+                        {{ (((att.member?.nama_lengkap || att.member?.nama || att.member?.user?.name || att.member?.name || att.nama_lengkap || att.nama || '?')[0]) || '?').toUpperCase() }}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium truncate">{{ att.member?.nama_lengkap || att.member?.user?.name || att.member?.name || '-' }}</p>
-                        <p class="text-[11px] text-slate-400 truncate">{{ att.member?.office?.name || att.office?.name || '-' }}</p>
+                        <p class="text-sm font-medium truncate">{{ att.member?.nama_lengkap || att.member?.nama || att.member?.user?.name || att.member?.name || att.nama_lengkap || att.nama || '-' }}</p>
+                        <p class="text-[11px] text-slate-400 truncate">{{ att.member?.office?.name || att.office?.name || att.office_name || att.kantor || '-' }}</p>
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-[11px] text-slate-400">
                                 <span class="material-symbols-rounded text-[12px] align-middle">login</span>
-                                {{ formatTime(att.check_in_time || att.check_in) }}
+                                {{ formatTime(att.check_in_time || att.check_in || att.waktu_masuk || att.jam_masuk) }}
                             </span>
-                            <span v-if="att.check_out_time || att.check_out" class="text-[11px] text-slate-400">
+                            <span v-if="att.check_out_time || att.check_out || att.waktu_keluar || att.jam_keluar" class="text-[11px] text-slate-400">
                                 <span class="material-symbols-rounded text-[12px] align-middle">logout</span>
-                                {{ formatTime(att.check_out_time || att.check_out) }}
+                                {{ formatTime(att.check_out_time || att.check_out || att.waktu_keluar || att.jam_keluar) }}
                             </span>
                         </div>
                     </div>
@@ -296,14 +296,14 @@ const statusColor = (status) => {
                             <td class="px-5 py-3">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 text-[10px] font-bold">
-                                        {{ ((att.member?.nama_lengkap || att.member?.user?.name || att.member?.name || '?')[0] || '?').toUpperCase() }}
+                                        {{ (((att.member?.nama_lengkap || att.member?.nama || att.member?.user?.name || att.member?.name || att.nama_lengkap || att.nama || '?')[0]) || '?').toUpperCase() }}
                                     </div>
-                                    <span class="text-sm font-medium">{{ att.member?.nama_lengkap || att.member?.user?.name || att.member?.name || '-' }}</span>
+                                    <span class="text-sm font-medium">{{ att.member?.nama_lengkap || att.member?.nama || att.member?.user?.name || att.member?.name || att.nama_lengkap || att.nama || '-' }}</span>
                                 </div>
                             </td>
-                            <td class="px-5 py-3 text-sm text-slate-500">{{ att.member?.office?.name || att.office?.name || '-' }}</td>
-                            <td class="px-5 py-3 text-sm text-slate-500 font-mono">{{ formatTime(att.check_in_time || att.check_in) }}</td>
-                            <td class="px-5 py-3 text-sm text-slate-500 font-mono">{{ (att.check_out_time || att.check_out) ? formatTime(att.check_out_time || att.check_out) : '-' }}</td>
+                            <td class="px-5 py-3 text-sm text-slate-500">{{ att.member?.office?.name || att.office?.name || att.office_name || att.kantor || '-' }}</td>
+                            <td class="px-5 py-3 text-sm text-slate-500 font-mono">{{ formatTime(att.check_in_time || att.check_in || att.waktu_masuk || att.jam_masuk) }}</td>
+                            <td class="px-5 py-3 text-sm text-slate-500 font-mono">{{ (att.check_out_time || att.check_out || att.waktu_keluar || att.jam_keluar) ? formatTime(att.check_out_time || att.check_out || att.waktu_keluar || att.jam_keluar) : '-' }}</td>
                             <td class="px-5 py-3">
                                 <span
                                     :class="statusColor(att.status)"

@@ -271,6 +271,16 @@ const doDelete = () => {
                     >
                         {{ u.is_active ? 'Aktif' : 'Nonaktif' }}
                     </span>
+                </div>
+
+                <div class="flex gap-2 pt-2 border-t border-slate-100">
+                    <button @click="openEdit(u)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors">
+                        <span class="material-symbols-rounded text-[16px]">edit</span>
+                        Edit
+                    </button>
+                    <button @click="confirmDelete(u.id)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
+                        <span class="material-symbols-rounded text-[16px]">delete</span>
+                        Hapus
                     </button>
                 </div>
             </div>

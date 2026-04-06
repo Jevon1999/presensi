@@ -250,6 +250,7 @@ const statusColor = (status) => {
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium truncate">{{ att.member?.nama_lengkap || att.member?.user?.name || att.member?.name || '-' }}</p>
+                        <p class="text-[11px] text-slate-400 truncate">{{ att.member?.office?.name || att.office?.name || '-' }}</p>
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-[11px] text-slate-400">
                                 <span class="material-symbols-rounded text-[12px] align-middle">login</span>

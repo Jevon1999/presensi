@@ -186,7 +186,7 @@ const doDelete = () => {
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold">
-                                    {{ u.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) }}
+                                    {{ (u.name || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) }}
                                 </div>
                                 <span class="text-sm font-semibold text-slate-700">{{ u.name }}</span>
                             </div>
@@ -249,7 +249,7 @@ const doDelete = () => {
                 <div class="flex items-start justify-between mb-3">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold">
-                            {{ u.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) }}
+                            {{ (u.name || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) }}
                         </div>
                         <div>
                             <p class="font-semibold text-sm text-slate-800">{{ u.name }}</p>

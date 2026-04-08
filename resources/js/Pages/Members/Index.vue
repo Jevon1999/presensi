@@ -14,6 +14,7 @@ defineOptions({ layout: AuthenticatedLayout })
 const props = defineProps({
     members: Object,
     offices: { type: Array, default: () => [] },
+    availableUsers: { type: Array, default: () => [] },
     filters: { type: Object, default: () => ({}) },
 })
 
@@ -133,7 +134,11 @@ const openRejectDialog = (id) => {
 }
 
 const doReject = () => {
-    rejectProcessing.value = true
+    if (!rejectReason.value || !rejectReason.value.trim()) {
+        alert('Alasan penolakan harus diisi!');
+        return;
+    }
+    rejectProcessing.value = true;
     router.put(`/members/${rejectingId.value}/reject`, { rejection_reason: rejectReason.value }, {
         preserveScroll: true,
         onSuccess: () => { showRejectDialog.value = false },
@@ -362,6 +367,7 @@ const statusLabel = (status) => {
             <MemberForm
                 :member="editingMember"
                 :offices="offices"
+                :available-users="availableUsers"
                 :processing="formProcessing"
                 @submit="handleSubmit"
             />
@@ -381,7 +387,7 @@ const statusLabel = (status) => {
         <ConfirmDialog
             :show="showRejectDialog"
             title="Tolak Pengajuan"
-            message="Berikan alasan penolakan (opsional):"
+            message="Berikan alasan penolakan (Wajib):"
             :processing="rejectProcessing"
             confirmText="Tolak"
             confirmClass="bg-red-500 hover:bg-red-600"

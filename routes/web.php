@@ -41,6 +41,16 @@ Route::middleware(['web'])->group(function () {
 
     // --- Admin routes (role=admin) ---
     Route::middleware(['token', 'admin'])->group(function () {
+        // Internal proxy for badges/notifications
+        Route::get('/internal/pending-members-count', function(Request $request) {
+            try {
+                $response = Illuminate\Support\Facades\Http::withToken(session('auth_token'))->timeout(3)->get(env('API_URL') . '/members/pending-count');
+                return response()->json(['count' => $response->json('count') ?? 0]);
+            } catch (\Exception $e) {
+                return response()->json(['count' => 0]);
+            }
+        });
+
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

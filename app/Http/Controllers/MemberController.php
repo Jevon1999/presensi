@@ -49,6 +49,8 @@ class MemberController extends Controller
                     ->get("{$this->apiUrl}/members", $request->only(['search', 'office_id', 'status_aktif', 'status', 'page'])),
                 $pool->as('offices')->withToken($this->token())->timeout(15)
                     ->get("{$this->apiUrl}/offices"),
+                $pool->as('users')->withToken($this->token())->timeout(15)
+                    ->get("{$this->apiUrl}/users", ['role' => 'user', 'page' => 1]),
             ]);
 
             if ($responses['members']->status() === 401) {
@@ -58,10 +60,52 @@ class MemberController extends Controller
 
             $membersData = $responses['members']->json();
             $offices = $responses['offices']->json()['data'] ?? [];
+            
+            // Get users from the remote API
+            $rawUsers = $responses['users']->json()['data'] ?? [];
+            
+            // Fetch all members' statuses to filter out those who are already pending/approved
+            // To do this simply, we'll hit the API for all members limit 500, or just rely on what we can.
+            // But since we want to be reliable with remote API, let's just make a separate request or use the current array.
+            $allMembersListRes = Http::withToken($this->token())->timeout(15)->get("{$this->apiUrl}/members");
+            $allMembers = $allMembersListRes->json()['data'] ?? [];
+            $existingUserIds = collect($allMembers)
+                ->filter(fn($m) => in_array($m['status'], ['pending', 'approved']))
+                ->pluck('user_id')
+                ->filter()
+                ->toArray();
+                
+            $availableUsers = collect($rawUsers)
+                ->filter(fn($u) => $u['role'] === 'user' && !in_array($u['id'], $existingUserIds))
+                ->values()
+                ->toArray();
+
+            // Fallback sync: if remote API doesn't have the cron active yet, visually deactivate and sync to API
+            $today = \Carbon\Carbon::now()->timezone('Asia/Jakarta')->toDateString();
+            if (isset($membersData['data']) && is_array($membersData['data'])) {
+                foreach ($membersData['data'] as &$m) {
+                    if (isset($m['status_aktif']) && $m['status_aktif']) {
+                        if (!empty($m['tanggal_selesai_magang'])) {
+                            $endDate = \Carbon\Carbon::parse($m['tanggal_selesai_magang'])->timezone('Asia/Jakarta')->toDateString();
+                            if ($endDate < $today) {
+                                // Mark visually false
+                                $m['status_aktif'] = false;
+                                
+                                // Sync back to remote API concurrently in background
+                                Http::withToken($this->token())->timeout(5)
+                                    ->put("{$this->apiUrl}/members/{$m['id']}", [
+                                        'status_aktif' => false
+                                    ]);
+                            }
+                        }
+                    }
+                }
+            }
 
             return Inertia::render('Members/Index', [
                 'members' => $membersData,
                 'offices' => $offices,
+                'availableUsers' => $availableUsers,
                 'filters' => $request->only(['search', 'office_id', 'status_aktif', 'status']),
             ]);
         } catch (\Exception $e) {
@@ -69,6 +113,7 @@ class MemberController extends Controller
             return Inertia::render('Members/Index', [
                 'members' => ['data' => [], 'current_page' => 1, 'last_page' => 1, 'total' => 0, 'from' => 0, 'to' => 0, 'links' => []],
                 'offices' => [],
+                'availableUsers' => [],
                 'filters' => $request->only(['search', 'office_id', 'status_aktif', 'status']),
                 'error' => 'Gagal memuat data: ' . $e->getMessage(),
             ]);

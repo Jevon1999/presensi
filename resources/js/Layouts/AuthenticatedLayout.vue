@@ -1,8 +1,9 @@
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { usePage, router, Link } from '@inertiajs/vue3'
 import Toast from '@/Components/Toast.vue'
 import logo from '../../images/logo_global.png'
+import axios from 'axios'
 
 const page = usePage()
 const user = computed(() => page.props.auth?.user)
@@ -16,8 +17,20 @@ const userInitials = computed(() => {
 // Sidebar state
 const sidebarOpen = ref(false)
 const userMenuOpen = ref(false)
+const pendingMembersCount = ref(0)
 
 const closeSidebar = () => { sidebarOpen.value = false }
+
+onMounted(() => {
+    // Only fetch if admin
+    if (user.value?.role === 'admin') {
+        axios.get('/internal/pending-members-count')
+            .then(res => {
+                pendingMembersCount.value = res.data.count || 0
+            })
+            .catch(err => {})
+    }
+})
 
 // Navigation items
 const navItems = [
@@ -127,7 +140,15 @@ const logout = () => {
                         class="material-symbols-rounded text-[20px]"
                         :class="isActive(item.match) ? 'text-blue-600' : 'text-slate-400'"
                     >{{ item.icon }}</span>
-                    <span class="text-sm">{{ item.name }}</span>
+                    <span class="text-sm flex-1">{{ item.name }}</span>
+                    
+                    <!-- Notification Badge -->
+                    <span
+                        v-if="item.name === 'Members' && pendingMembersCount > 0"
+                        class="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 flex items-center justify-center text-white text-[10px] font-bold shadow-sm transition-all animate-pulse"
+                    >
+                        {{ pendingMembersCount }}
+                    </span>
                 </Link>
             </nav>
 

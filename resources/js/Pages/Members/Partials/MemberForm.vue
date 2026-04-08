@@ -1,10 +1,13 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3'
 import { watch } from 'vue'
+import { VueDatePicker } from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 
 const props = defineProps({
     member: { type: Object, default: null },
     offices: { type: Array, default: () => [] },
+    availableUsers: { type: Array, default: () => [] },
     processing: Boolean,
 })
 
@@ -13,6 +16,7 @@ const emit = defineEmits(['submit'])
 const isEdit = !!props.member
 
 const form = useForm({
+    user_id: props.member?.user_id || '',
     nama_lengkap: props.member?.nama_lengkap || '',
     no_hp: props.member?.no_hp || '',
     jenis_kelamin: props.member?.jenis_kelamin || 'L',
@@ -26,6 +30,7 @@ const form = useForm({
 
 watch(() => props.member, (m) => {
     if (m) {
+        form.user_id = m.user_id || ''
         form.nama_lengkap = m.nama_lengkap || ''
         form.no_hp = m.no_hp || ''
         form.jenis_kelamin = m.jenis_kelamin || 'L'
@@ -36,6 +41,35 @@ watch(() => props.member, (m) => {
         form.tanggal_selesai_magang = m.tanggal_selesai_magang || ''
         form.status_aktif = m.status_aktif ?? true
     }
+})
+
+const onUserSelect = (e) => {
+    const selected = props.availableUsers?.find(u => u.id == e.target.value);
+    if (selected) {
+        form.nama_lengkap = selected.name;
+    } else {
+        form.nama_lengkap = '';
+    }
+}
+
+const toTitleCase = (str) => {
+    if (!str) return '';
+    return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+}
+
+watch(() => form.asal_sekolah, (val) => {
+    const formatted = toTitleCase(val);
+    if (val !== formatted) form.asal_sekolah = formatted;
+})
+
+watch(() => form.jurusan, (val) => {
+    const formatted = toTitleCase(val);
+    if (val !== formatted) form.jurusan = formatted;
+})
+
+watch(() => form.nama_lengkap, (val) => {
+    const formatted = toTitleCase(val);
+    if (val !== formatted) form.nama_lengkap = formatted;
 })
 
 const submit = () => {
@@ -60,17 +94,30 @@ const formatPhone = () => {
 
 <template>
     <form @submit.prevent="submit" class="space-y-4">
-        <!-- Nama -->
+        <!-- Nama Lengkap / Pilih User -->
         <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Nama Lengkap <span class="text-red-400">*</span></label>
-            <input
-                v-model="form.nama_lengkap"
-                type="text"
-                placeholder="Masukkan nama lengkap"
-                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                :class="{ 'border-red-300 bg-red-50': form.errors.nama_lengkap }"
-            />
-            <p v-if="form.errors.nama_lengkap" class="text-xs text-red-500 mt-1">{{ form.errors.nama_lengkap }}</p>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">User Terkait (Nama) <span class="text-red-400">*</span></label>
+            <div v-if="!isEdit">
+                <select
+                    v-model="form.user_id"
+                    @change="onUserSelect"
+                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all bg-white"
+                    :class="{ 'border-red-300 bg-red-50': form.errors.user_id || form.errors.nama_lengkap }"
+                >
+                    <option value="">Pilih user...</option>
+                    <option v-for="u in availableUsers" :key="u.id" :value="u.id">{{ u.name }} ({{ u.email }})</option>
+                </select>
+                <p v-if="form.errors.user_id" class="text-xs text-red-500 mt-1">{{ form.errors.user_id }}</p>
+                <p v-if="form.errors.nama_lengkap" class="text-xs text-red-500 mt-1">{{ form.errors.nama_lengkap }}</p>
+            </div>
+            <div v-else>
+                <input
+                    v-model="form.nama_lengkap"
+                    disabled
+                    type="text"
+                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 text-slate-500 outline-none"
+                />
+            </div>
         </div>
 
         <!-- No HP -->
@@ -146,18 +193,24 @@ const formatPhone = () => {
         <div class="grid grid-cols-2 gap-3">
             <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1.5">Mulai Magang <span class="text-red-400">*</span></label>
-                <input
+                <VueDatePicker 
                     v-model="form.tanggal_mulai_magang"
-                    type="date"
-                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    :enable-time-picker="false"
+                    model-type="yyyy-MM-dd"
+                    format="dd MMM yyyy"
+                    auto-apply
+                    input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                 />
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1.5">Selesai Magang</label>
-                <input
+                <VueDatePicker 
                     v-model="form.tanggal_selesai_magang"
-                    type="date"
-                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    :enable-time-picker="false"
+                    model-type="yyyy-MM-dd"
+                    format="dd MMM yyyy"
+                    auto-apply
+                    input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                 />
             </div>
         </div>

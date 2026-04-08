@@ -58,7 +58,7 @@ const toTitleCase = (str) => {
 }
 
 watch(() => form.asal_sekolah, (val) => {
-    const formatted = toTitleCase(val);
+    const formatted = val ? val.toUpperCase() : '';
     if (val !== formatted) form.asal_sekolah = formatted;
 })
 

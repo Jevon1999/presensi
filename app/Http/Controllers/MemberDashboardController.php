@@ -26,14 +26,30 @@ class MemberDashboardController extends Controller
         return Http::withToken($this->token())->timeout(15);
     }
 
+    /**
+     * Hapus session dan redirect ke login.
+     * Dipanggil jika API mengembalikan 401/403/404 (akun dihapus / token kadaluarsa).
+     */
+    private function invalidSession(string $msg = 'Sesi telah berakhir, silakan login kembali.')
+    {
+        session()->forget(['auth_token', 'user', 'member']);
+        session()->invalidate();
+        session()->regenerateToken();
+        return redirect()->route('login')->with('error', $msg);
+    }
+
     public function dashboard()
     {
         try {
             $response = $this->api()->get("{$this->apiUrl}/member/dashboard");
 
-            if ($response->status() === 401) {
-                session()->forget(['auth_token', 'user', 'member']);
-                return redirect()->route('login')->with('error', 'Sesi telah berakhir.');
+            if ($response->status() === 401 || $response->status() === 403) {
+                return $this->invalidSession();
+            }
+
+            // 404 = akun/member sudah dihapus oleh admin
+            if ($response->status() === 404) {
+                return $this->invalidSession('Akun Anda tidak ditemukan. Mungkin telah dihapus oleh admin.');
             }
 
             if (!$response->successful()) {
@@ -63,9 +79,12 @@ class MemberDashboardController extends Controller
         try {
             $response = $this->api()->get("{$this->apiUrl}/member/progress");
 
-            if ($response->status() === 401) {
-                session()->forget(['auth_token', 'user', 'member']);
-                return redirect()->route('login')->with('error', 'Sesi telah berakhir.');
+            if ($response->status() === 401 || $response->status() === 403) {
+                return $this->invalidSession();
+            }
+
+            if ($response->status() === 404) {
+                return $this->invalidSession('Akun Anda tidak ditemukan. Mungkin telah dihapus oleh admin.');
             }
 
             $data = $response->json();
@@ -90,9 +109,12 @@ class MemberDashboardController extends Controller
                 'end_date' => $request->end_date,
             ]);
 
-            if ($response->status() === 401) {
-                session()->forget(['auth_token', 'user', 'member']);
-                return redirect()->route('login')->with('error', 'Sesi telah berakhir.');
+            if ($response->status() === 401 || $response->status() === 403) {
+                return $this->invalidSession();
+            }
+
+            if ($response->status() === 404) {
+                return $this->invalidSession('Akun Anda tidak ditemukan. Mungkin telah dihapus oleh admin.');
             }
 
             $data = $response->successful() ? $response->json() : [];

@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 import { Head, router } from '@inertiajs/vue3'
 import MemberLayout from '@/Layouts/MemberLayout.vue'
+import { VueDatePicker } from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 
 defineOptions({ layout: MemberLayout })
 
@@ -60,11 +62,27 @@ const formatTime = (t) => {
             <div class="flex flex-col sm:flex-row gap-3 items-end">
                 <div class="flex-1">
                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tanggal Mulai</label>
-                    <input v-model="startDate" type="date" class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none" />
+                    <VueDatePicker
+                        v-model="startDate"
+                        :enable-time-picker="false"
+                        model-type="yyyy-MM-dd"
+                        format="dd/MM/yyyy"
+                        auto-apply
+                        placeholder="Mulai"
+                        input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all"
+                    />
                 </div>
                 <div class="flex-1">
                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tanggal Akhir</label>
-                    <input v-model="endDate" type="date" class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none" />
+                    <VueDatePicker
+                        v-model="endDate"
+                        :enable-time-picker="false"
+                        model-type="yyyy-MM-dd"
+                        format="dd/MM/yyyy"
+                        auto-apply
+                        placeholder="Akhir"
+                        input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all"
+                    />
                 </div>
                 <button @click="applyFilter" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-xl transition-colors">
                     Tampilkan

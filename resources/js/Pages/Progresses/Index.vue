@@ -6,6 +6,8 @@ import FormPanel from '@/Components/FormPanel.vue'
 import ConfirmDialog from '@/Components/ConfirmDialog.vue'
 import Pagination from '@/Components/Pagination.vue'
 import EmptyState from '@/Components/EmptyState.vue'
+import { VueDatePicker } from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 import ProgressForm from './Partials/ProgressForm.vue'
 
 defineOptions({ layout: AuthenticatedLayout })
@@ -138,16 +140,24 @@ const truncate = (str, len = 80) => {
                     <option v-for="m in members" :key="m.id" :value="m.id">{{ m.nama_lengkap }}</option>
                 </select>
                 <div class="flex items-center gap-2">
-                    <input
+                    <VueDatePicker
                         v-model="startDate"
-                        type="date"
-                        class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                        :enable-time-picker="false"
+                        model-type="yyyy-MM-dd"
+                        format="dd/MM/yyyy"
+                        auto-apply
+                        placeholder="Mulai"
+                        input-class-name="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all w-32"
                     />
                     <span class="text-xs text-slate-400">s/d</span>
-                    <input
+                    <VueDatePicker
                         v-model="endDate"
-                        type="date"
-                        class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                        :enable-time-picker="false"
+                        model-type="yyyy-MM-dd"
+                        format="dd/MM/yyyy"
+                        auto-apply
+                        placeholder="Akhir"
+                        input-class-name="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all w-32"
                     />
                 </div>
                 <button

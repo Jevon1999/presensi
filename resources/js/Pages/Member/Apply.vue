@@ -189,10 +189,10 @@ watch(() => form.asal_sekolah, (val) => {
 
                     <!-- Jurusan -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jurusan</label>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jurusan <span class="text-red-400">*</span></label>
                         <div class="relative">
                             <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">menu_book</span>
-                            <input v-model="form.jurusan" type="text" placeholder="Contoh: Teknik Informatika"
+                            <input v-model="form.jurusan" type="text" required placeholder="Contoh: Teknik Informatika"
                                 class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                                 :class="{ 'border-red-300 bg-red-50': form.errors.jurusan }" />
                         </div>

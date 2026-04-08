@@ -42,12 +42,19 @@ Route::middleware(['web'])->group(function () {
     // --- Admin routes (role=admin) ---
     Route::middleware(['token', 'admin'])->group(function () {
         // Internal proxy for badges/notifications
-        Route::get('/internal/pending-members-count', function(Request $request) {
+        Route::get('/internal/pending-members-count', function() {
             try {
-                $response = Illuminate\Support\Facades\Http::withToken(session('auth_token'))->timeout(3)->get(env('API_URL') . '/members/pending-count');
-                return response()->json(['count' => $response->json('count') ?? 0]);
+                $apiUrl = rtrim(env('API_URL'), '/');
+                $response = Illuminate\Support\Facades\Http::withToken(session('auth_token'))
+                    ->timeout(10)
+                    ->get($apiUrl . '/members/pending-count');
+                
+                if ($response->successful()) {
+                    return response()->json(['count' => $response->json('count') ?? 0]);
+                }
+                return response()->json(['count' => 0, 'error' => 'API returned ' . $response->status()]);
             } catch (\Exception $e) {
-                return response()->json(['count' => 0]);
+                return response()->json(['count' => 0, 'error' => $e->getMessage()]);
             }
         });
 

@@ -5,6 +5,9 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Badge from '@/Components/Badge.vue'
 import EmptyState from '@/Components/EmptyState.vue'
 
+import { VueDatePicker } from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+
 defineOptions({ layout: AuthenticatedLayout })
 
 const props = defineProps({
@@ -18,6 +21,28 @@ const startDate = ref(props.filters.start_date || new Date(new Date().getFullYea
 const endDate = ref(props.filters.end_date || new Date().toISOString().slice(0, 10))
 const officeFilter = ref(props.filters.office_id || '')
 const memberFilter = ref(props.filters.member_id || '')
+
+// Searchable member logic
+const memberSearch = ref('')
+const showMemberDropdown = ref(false)
+const filteredMembers = computed(() => {
+    if (!memberSearch.value) return props.members
+    const s = memberSearch.value.toLowerCase()
+    return props.members.filter(m => 
+        m.nama_lengkap.toLowerCase().includes(s)
+    )
+})
+const selectedMemberName = computed(() => {
+    if (!memberFilter.value) return ''
+    const m = props.members.find(m => m.id == memberFilter.value)
+    return m ? m.nama_lengkap : ''
+})
+const selectMember = (m) => {
+    memberFilter.value = m.id
+    memberSearch.value = ''
+    showMemberDropdown.value = false
+    applyFilters()
+}
 
 const applyFilters = () => {
     router.get('/attendances/report', {
@@ -56,7 +81,7 @@ const formatTime = (t) => t || '-'
 </script>
 
 <template>
-    <div>
+    <div @click="showMemberDropdown = false">
         <!-- Header -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
@@ -82,43 +107,76 @@ const formatTime = (t) => t || '-'
             <div class="flex flex-col gap-3">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1.5 sm:hidden">Tanggal Mulai</label>
-                        <input
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Tanggal Mulai</label>
+                        <VueDatePicker
                             v-model="startDate"
-                            type="date"
-                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                            :enable-time-picker="false"
+                            model-type="yyyy-MM-dd"
+                            format="dd/MM/yyyy"
+                            auto-apply
+                            input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                         />
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1.5 sm:hidden">Tanggal Akhir</label>
-                        <input
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Tanggal Akhir</label>
+                        <VueDatePicker
                             v-model="endDate"
-                            type="date"
-                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                            :enable-time-picker="false"
+                            model-type="yyyy-MM-dd"
+                            format="dd/MM/yyyy"
+                            auto-apply
+                            input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                         />
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
-                <select
-                    v-model="officeFilter"
-                    class="w-full sm:w-auto px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white sm:min-w-[140px]"
-                >
-                    <option value="">Semua Kantor</option>
-                    <option v-for="o in offices" :key="o.id" :value="o.id">{{ o.name }}</option>
-                </select>
-                <select
-                    v-model="memberFilter"
-                    class="w-full sm:w-auto px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white sm:min-w-[160px]"
-                >
-                    <option value="">Semua Anggota</option>
-                    <option v-for="m in members" :key="m.id" :value="m.id">{{ m.nama_lengkap }}</option>
-                </select>
-                <button
-                    @click="applyFilters"
-                    class="w-full sm:w-auto px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors"
-                >
-                    Tampilkan
-                </button>
+                    <select
+                        v-model="officeFilter"
+                        @change="applyFilters"
+                        class="w-full sm:w-auto px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white sm:min-w-[140px]"
+                    >
+                        <option value="">Semua Kantor</option>
+                        <option v-for="o in offices" :key="o.id" :value="o.id">{{ o.name }}</option>
+                    </select>
+                    
+                    <!-- Searchable Member Select -->
+                    <div class="relative w-full sm:w-64">
+                        <input
+                            type="text"
+                            v-model="memberSearch"
+                            @click.stop="showMemberDropdown = true"
+                            placeholder="Cari anggota..."
+                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all bg-white"
+                        />
+                        <div v-if="selectedMemberName && !memberSearch" class="absolute right-10 top-1/2 -translate-y-1/2 text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-lg truncate max-w-[120px]">
+                            {{ selectedMemberName }}
+                        </div>
+                        <span class="material-symbols-rounded absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                        
+                        <div v-if="showMemberDropdown" class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                            <div 
+                                class="px-4 py-2.5 hover:bg-slate-50 cursor-pointer text-sm text-slate-600 border-b border-slate-50"
+                                @click.stop="memberFilter = ''; showMemberDropdown = false; applyFilters()"
+                            >
+                                Semua Anggota
+                            </div>
+                            <div 
+                                v-for="m in filteredMembers" 
+                                :key="m.id"
+                                @click.stop="selectMember(m)"
+                                class="px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors border-b border-slate-50 last:border-0 text-sm"
+                            >
+                                {{ m.nama_lengkap }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        @click="applyFilters"
+                        class="w-full sm:w-auto px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm ml-auto"
+                    >
+                        Tampilkan
+                    </button>
                 </div>
             </div>
         </div>

@@ -8,6 +8,8 @@ import Badge from '@/Components/Badge.vue'
 import EmptyState from '@/Components/EmptyState.vue'
 import AttendanceDetail from './Partials/AttendanceDetail.vue'
 import ResetForm from './Partials/ResetForm.vue'
+import { VueDatePicker } from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 
 defineOptions({ layout: AuthenticatedLayout })
 
@@ -125,11 +127,14 @@ const summaryCards = computed(() => [
         <!-- Filters -->
         <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
             <div class="flex flex-col sm:flex-row gap-3">
-                <input
+                <VueDatePicker
                     v-model="dateFilter"
-                    @change="applyFilters"
-                    type="date"
-                    class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    @update:model-value="applyFilters"
+                    :enable-time-picker="false"
+                    model-type="yyyy-MM-dd"
+                    format="dd/MM/yyyy"
+                    auto-apply
+                    input-class-name="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all w-40"
                 />
                 <select
                     v-model="officeFilter"

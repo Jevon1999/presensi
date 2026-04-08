@@ -18,37 +18,62 @@ const isEdit = !!props.member
 const form = useForm({
     user_id: props.member?.user_id || '',
     nama_lengkap: props.member?.nama_lengkap || '',
-    no_hp: props.member?.no_hp || '',
-    jenis_kelamin: props.member?.jenis_kelamin || 'L',
+    jenis_kelamin: props.member?.jenis_kelamin || '',
     asal_sekolah: props.member?.asal_sekolah || '',
     jurusan: props.member?.jurusan || '',
+    no_hp: props.member?.no_hp || '',
     office_id: props.member?.office_id || '',
     tanggal_mulai_magang: props.member?.tanggal_mulai_magang || '',
     tanggal_selesai_magang: props.member?.tanggal_selesai_magang || '',
-    status_aktif: props.member?.status_aktif ?? true,
+    status_aktif: props.member ? !!props.member.status_aktif : true,
 })
+
+// Searchable user logic
+const userSearch = ref('')
+const showUserDropdown = ref(false)
+const filteredUsers = computed(() => {
+    if (!userSearch.value) return props.availableUsers
+    const s = userSearch.value.toLowerCase()
+    return props.availableUsers.filter(u => 
+        u.name.toLowerCase().includes(s) || 
+        u.email.toLowerCase().includes(s)
+    )
+})
+const selectedUserName = computed(() => {
+    const u = props.availableUsers.find(u => u.id === form.user_id)
+    return u ? `${u.name} (${u.email})` : ''
+})
+const selectUser = (u) => {
+    form.user_id = u.id
+    userSearch.value = ''
+    showUserDropdown.value = false
+    
+    // Auto fill name if empty
+    if (!form.nama_lengkap) {
+        form.nama_lengkap = u.name
+    }
+}
 
 watch(() => props.member, (m) => {
     if (m) {
         form.user_id = m.user_id || ''
         form.nama_lengkap = m.nama_lengkap || ''
-        form.no_hp = m.no_hp || ''
-        form.jenis_kelamin = m.jenis_kelamin || 'L'
+        form.jenis_kelamin = m.jenis_kelamin || ''
         form.asal_sekolah = m.asal_sekolah || ''
         form.jurusan = m.jurusan || ''
+        form.no_hp = m.no_hp || ''
         form.office_id = m.office_id || ''
         form.tanggal_mulai_magang = m.tanggal_mulai_magang || ''
         form.tanggal_selesai_magang = m.tanggal_selesai_magang || ''
-        form.status_aktif = m.status_aktif ?? true
+        form.status_aktif = !!m.status_aktif
     }
-})
+}, { deep: true })
 
 const onUserSelect = (e) => {
-    const selected = props.availableUsers?.find(u => u.id == e.target.value);
-    if (selected) {
-        form.nama_lengkap = selected.name;
-    } else {
-        form.nama_lengkap = '';
+    const userId = e.target.value
+    const user = props.availableUsers.find(u => u.id == userId)
+    if (user && !form.nama_lengkap) {
+        form.nama_lengkap = user.name
     }
 }
 
@@ -164,10 +189,11 @@ const formatPhone = () => {
 
         <!-- Jurusan -->
         <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jurusan</label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jurusan <span class="text-red-400">*</span></label>
             <input
                 v-model="form.jurusan"
                 type="text"
+                required
                 placeholder="Contoh: Teknik Informatika"
                 class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                 :class="{ 'border-red-300 bg-red-50': form.errors.jurusan }"
@@ -180,6 +206,7 @@ const formatPhone = () => {
             <label class="block text-xs font-semibold text-slate-600 mb-1.5">Kantor <span class="text-red-400">*</span></label>
             <select
                 v-model="form.office_id"
+                required
                 class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white"
                 :class="{ 'border-red-300 bg-red-50': form.errors.office_id }"
             >

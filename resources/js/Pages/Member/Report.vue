@@ -32,12 +32,20 @@ const printReport = () => {
 
 const formatDate = (d) => {
     if (!d) return '-'
-    return new Date(d).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+    const parsed = new Date(typeof d === 'string' && d.length === 10 ? d + 'T00:00:00' : d)
+    if (isNaN(parsed.getTime())) return d
+    return parsed.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+const formatDateShort = (d) => {
+    if (!d) return '-'
+    const parsed = new Date(typeof d === 'string' && d.length === 10 ? d + 'T00:00:00' : d)
+    if (isNaN(parsed.getTime())) return d
+    return parsed.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 const formatTime = (t) => {
     if (!t) return '-'
-    // Handle time-only string "HH:mm:ss"
     if (typeof t === 'string' && /^\d{2}:\d{2}(:\d{2})?$/.test(t)) {
         return t.slice(0, 5)
     }
@@ -52,12 +60,12 @@ const formatTime = (t) => {
 
     <div>
         <!-- Screen Header (hidden on print) -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 print:hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 print:hidden">
             <div>
                 <h1 class="text-xl font-bold text-slate-800">Laporan Kehadiran</h1>
                 <p class="text-sm text-slate-400 mt-0.5">Cetak laporan absensi Anda</p>
             </div>
-            <button @click="printReport" class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors">
+            <button @click="printReport" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors">
                 <span class="material-symbols-rounded text-[18px]">print</span>
                 Cetak Laporan
             </button>
@@ -65,8 +73,8 @@ const formatTime = (t) => {
 
         <!-- Filter (hidden on print) -->
         <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4 print:hidden">
-            <div class="flex flex-col sm:flex-row gap-3 items-end">
-                <div class="flex-1">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tanggal Mulai</label>
                     <VueDatePicker
                         v-model="startDate"
@@ -74,11 +82,11 @@ const formatTime = (t) => {
                         model-type="yyyy-MM-dd"
                         format="dd/MM/yyyy"
                         auto-apply
-                        placeholder="Mulai"
+                        placeholder="Pilih tanggal mulai"
                         input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all"
                     />
                 </div>
-                <div class="flex-1">
+                <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tanggal Akhir</label>
                     <VueDatePicker
                         v-model="endDate"
@@ -86,14 +94,14 @@ const formatTime = (t) => {
                         model-type="yyyy-MM-dd"
                         format="dd/MM/yyyy"
                         auto-apply
-                        placeholder="Akhir"
+                        placeholder="Pilih tanggal akhir"
                         input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all"
                     />
                 </div>
-                <button @click="applyFilter" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-xl transition-colors">
-                    Tampilkan
-                </button>
             </div>
+            <button @click="applyFilter" class="w-full sm:w-auto px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-xl transition-colors">
+                Tampilkan
+            </button>
         </div>
 
         <!-- Error -->
@@ -103,7 +111,7 @@ const formatTime = (t) => {
         </div>
 
         <!-- Report Content (visible on print) -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 print:border-0 print:shadow-none print:p-0">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 print:border-0 print:shadow-none print:p-0">
             <!-- Print Header -->
             <div class="hidden print:block text-center mb-6">
                 <h1 class="text-lg font-bold">LAPORAN KEHADIRAN</h1>
@@ -112,41 +120,44 @@ const formatTime = (t) => {
             </div>
 
             <!-- Member Info -->
-            <div class="mb-6" v-if="member">
+            <div class="mb-5" v-if="member">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 print:text-gray-600">Data Member</h3>
-                <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                    <div><span class="text-slate-500">Nama:</span> <strong>{{ member.nama_lengkap }}</strong></div>
-                    <div><span class="text-slate-500">Kantor:</span> <strong>{{ member.office?.name || '-' }}</strong></div>
-                    <div><span class="text-slate-500">Periode:</span> <strong>{{ period?.start_date }} — {{ period?.end_date }}</strong></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    <div class="flex gap-1.5"><span class="text-slate-500 shrink-0">Nama:</span> <strong class="text-slate-800">{{ member.nama_lengkap }}</strong></div>
+                    <div class="flex gap-1.5"><span class="text-slate-500 shrink-0">Kantor:</span> <strong class="text-slate-800">{{ member.office?.name || '-' }}</strong></div>
+                    <div class="flex gap-1.5 sm:col-span-2">
+                        <span class="text-slate-500 shrink-0">Periode:</span>
+                        <strong class="text-slate-800">{{ period?.start_date }} — {{ period?.end_date }}</strong>
+                    </div>
                 </div>
             </div>
 
             <!-- Stats Summary -->
-            <div v-if="stats" class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-                <div class="bg-slate-50 rounded-xl p-3 text-center print:border print:bg-white">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase">Hari Kerja</p>
-                    <p class="text-lg font-bold text-slate-800">{{ stats.working_days }}</p>
+            <div v-if="stats" class="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3 mb-5">
+                <div class="bg-slate-50 rounded-xl p-2.5 text-center print:border print:bg-white">
+                    <p class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">Hari Kerja</p>
+                    <p class="text-base sm:text-lg font-bold text-slate-800">{{ stats.working_days }}</p>
                 </div>
-                <div class="bg-green-50 rounded-xl p-3 text-center print:border print:bg-white">
-                    <p class="text-[10px] font-bold text-green-600 uppercase">Hadir</p>
-                    <p class="text-lg font-bold text-green-700">{{ stats.total_hadir }}</p>
+                <div class="bg-green-50 rounded-xl p-2.5 text-center print:border print:bg-white">
+                    <p class="text-[9px] sm:text-[10px] font-bold text-green-600 uppercase">Hadir</p>
+                    <p class="text-base sm:text-lg font-bold text-green-700">{{ stats.total_hadir }}</p>
                 </div>
-                <div class="bg-red-50 rounded-xl p-3 text-center print:border print:bg-white">
-                    <p class="text-[10px] font-bold text-red-600 uppercase">Absen</p>
-                    <p class="text-lg font-bold text-red-700">{{ stats.total_absen }}</p>
+                <div class="bg-red-50 rounded-xl p-2.5 text-center print:border print:bg-white">
+                    <p class="text-[9px] sm:text-[10px] font-bold text-red-600 uppercase">Absen</p>
+                    <p class="text-base sm:text-lg font-bold text-red-700">{{ stats.total_absen }}</p>
                 </div>
-                <div class="bg-amber-50 rounded-xl p-3 text-center print:border print:bg-white">
-                    <p class="text-[10px] font-bold text-amber-600 uppercase">Terlambat</p>
-                    <p class="text-lg font-bold text-amber-700">{{ stats.total_terlambat }}</p>
+                <div class="bg-amber-50 rounded-xl p-2.5 text-center print:border print:bg-white">
+                    <p class="text-[9px] sm:text-[10px] font-bold text-amber-600 uppercase">Terlambat</p>
+                    <p class="text-base sm:text-lg font-bold text-amber-700">{{ stats.total_terlambat }}</p>
                 </div>
-                <div class="bg-blue-50 rounded-xl p-3 text-center print:border print:bg-white">
-                    <p class="text-[10px] font-bold text-blue-600 uppercase">Persentase</p>
-                    <p class="text-lg font-bold text-blue-700">{{ stats.persentase }}%</p>
+                <div class="bg-blue-50 rounded-xl p-2.5 text-center col-span-3 sm:col-span-1 print:border print:bg-white">
+                    <p class="text-[9px] sm:text-[10px] font-bold text-blue-600 uppercase">Persentase</p>
+                    <p class="text-base sm:text-lg font-bold text-blue-700">{{ stats.persentase }}%</p>
                 </div>
             </div>
 
-            <!-- Attendance Table -->
-            <table v-if="attendances.length" class="w-full text-sm">
+            <!-- Desktop Table (hidden on mobile) -->
+            <table v-if="attendances.length" class="w-full text-sm hidden sm:table print:table">
                 <thead>
                     <tr class="border-b border-slate-200">
                         <th class="text-left py-2 px-2 text-[11px] font-bold text-slate-400 uppercase">No</th>
@@ -169,10 +180,37 @@ const formatTime = (t) => {
                     </tr>
                 </tbody>
             </table>
-            <div v-else class="py-8 text-center">
-                <span class="material-symbols-rounded text-slate-300 text-[32px]">event_busy</span>
+
+            <!-- Mobile Cards (visible only on mobile, hidden on print) -->
+            <div v-if="attendances.length" class="sm:hidden print:hidden space-y-2">
+                <div
+                    v-for="(att, i) in attendances"
+                    :key="'m-' + att.id"
+                    class="flex items-center justify-between py-3 border-b border-slate-100 last:border-0"
+                >
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
+                            :class="att.is_late ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'">
+                            {{ i + 1 }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800">{{ formatDateShort(att.tanggal) }}</p>
+                            <span v-if="att.is_late" class="text-[10px] font-semibold text-amber-600">Terlambat</span>
+                            <span v-else class="text-[10px] font-semibold text-green-600">Hadir</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-medium text-slate-700">{{ formatTime(att.check_in_time) }}</p>
+                        <p class="text-xs text-slate-400">→ {{ formatTime(att.check_out_time) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="!attendances.length" class="py-10 text-center">
+                <span class="material-symbols-rounded text-slate-300 text-[40px]">event_busy</span>
                 <p class="text-sm text-slate-400 mt-2">Tidak ada data absensi dalam periode ini.</p>
             </div>
         </div>
     </div>
 </template>
+

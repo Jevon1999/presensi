@@ -1,6 +1,8 @@
+<script setup>
+import { useForm } from '@inertiajs/vue3'
+import { watch, ref, computed } from 'vue'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
-import { ref, computed } from 'vue'
 
 const props = defineProps({
     progress: { type: Object, default: null },

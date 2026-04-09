@@ -37,7 +37,13 @@ const formatDate = (d) => {
 
 const formatTime = (t) => {
     if (!t) return '-'
-    return new Date(t).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+    // Handle time-only string "HH:mm:ss"
+    if (typeof t === 'string' && /^\d{2}:\d{2}(:\d{2})?$/.test(t)) {
+        return t.slice(0, 5)
+    }
+    const d = new Date(t)
+    if (isNaN(d.getTime())) return t
+    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
 }
 </script>
 

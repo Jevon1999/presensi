@@ -37,13 +37,22 @@ const todayStatus = computed(() => {
 
 const formatTime = (t) => {
     if (!t) return '-'
+    // If it's a time-only string like "07:30:00" or "07:30", just slice it
+    if (typeof t === 'string' && /^\d{2}:\d{2}(:\d{2})?$/.test(t)) {
+        return t.slice(0, 5) // returns "07:30"
+    }
+    // Otherwise try to parse as datetime
     const d = new Date(t)
+    if (isNaN(d.getTime())) return t // fallback: show raw value
     return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
 }
 
 const formatDate = (d) => {
     if (!d) return '-'
-    return new Date(d).toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })
+    // Append T00:00:00 to prevent timezone shifting on date-only strings
+    const parsed = new Date(typeof d === 'string' && d.length === 10 ? d + 'T00:00:00' : d)
+    if (isNaN(parsed.getTime())) return d
+    return parsed.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' })
 }
 </script>
 

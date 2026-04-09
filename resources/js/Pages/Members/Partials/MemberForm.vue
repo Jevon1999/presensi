@@ -118,31 +118,47 @@ const formatPhone = () => {
 </script>
 
 <template>
-    <form @submit.prevent="submit" class="space-y-4">
-        <!-- Nama Lengkap / Pilih User -->
+    <form @submit.prevent="submit" class="space-y-4" @click="showUserDropdown = false">
+        <!-- User Selection (Searchable) -->
         <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5">User Terkait (Nama) <span class="text-red-400">*</span></label>
-            <div v-if="!isEdit">
-                <select
-                    v-model="form.user_id"
-                    @change="onUserSelect"
-                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all bg-white"
-                    :class="{ 'border-red-300 bg-red-50': form.errors.user_id || form.errors.nama_lengkap }"
-                >
-                    <option value="">Pilih user...</option>
-                    <option v-for="u in availableUsers" :key="u.id" :value="u.id">{{ u.name }} ({{ u.email }})</option>
-                </select>
-                <p v-if="form.errors.user_id" class="text-xs text-red-500 mt-1">{{ form.errors.user_id }}</p>
-                <p v-if="form.errors.nama_lengkap" class="text-xs text-red-500 mt-1">{{ form.errors.nama_lengkap }}</p>
-            </div>
-            <div v-else>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Hubungkan ke User <span class="text-red-400">*</span></label>
+            <div v-if="!isEdit" class="relative">
                 <input
-                    v-model="form.nama_lengkap"
-                    disabled
                     type="text"
-                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 text-slate-500 outline-none"
+                    v-model="userSearch"
+                    @click.stop="showUserDropdown = true"
+                    @focus="showUserDropdown = true"
+                    placeholder="Cari user (ketik nama atau email)..."
+                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all bg-white pr-10"
+                    :class="{ 'border-red-300 bg-red-50': form.errors.user_id || form.errors.nama_lengkap }"
                 />
+                <span class="material-symbols-rounded absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                <div v-if="selectedUserName && !userSearch" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-700 pointer-events-none">
+                    {{ selectedUserName }}
+                </div>
+
+                <!-- Dropdown -->
+                <div v-if="showUserDropdown" class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                    <div
+                        v-for="u in filteredUsers"
+                        :key="u.id"
+                        @click.stop="selectUser(u)"
+                        class="px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors border-b border-slate-50 last:border-0"
+                    >
+                        <p class="text-sm font-semibold text-slate-700">{{ u.name }}</p>
+                        <p class="text-[10px] text-slate-400">{{ u.email }}</p>
+                    </div>
+                    <div v-if="filteredUsers.length === 0" class="px-4 py-4 text-center text-sm text-slate-400">
+                        User tidak ditemukan
+                    </div>
+                </div>
             </div>
+            <div v-else class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-100 bg-slate-50 text-slate-500 font-medium">
+                {{ form.nama_lengkap }}
+            </div>
+            <input type="hidden" v-model="form.user_id" />
+            <p v-if="form.errors.user_id" class="text-xs text-red-500 mt-1">{{ form.errors.user_id }}</p>
+            <p v-if="form.errors.nama_lengkap" class="text-xs text-red-500 mt-1">{{ form.errors.nama_lengkap }}</p>
         </div>
 
         <!-- No HP -->
@@ -152,6 +168,7 @@ const formatPhone = () => {
                 v-model="form.no_hp"
                 @blur="formatPhone"
                 type="text"
+                required
                 placeholder="+628xxxxxxxxxx"
                 class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                 :class="{ 'border-red-300 bg-red-50': form.errors.no_hp }"
@@ -161,17 +178,18 @@ const formatPhone = () => {
 
         <!-- Jenis Kelamin -->
         <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jenis Kelamin</label>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Jenis Kelamin <span class="text-red-400">*</span></label>
             <div class="flex gap-4">
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" v-model="form.jenis_kelamin" value="L" class="radio radio-sm radio-primary" />
+                    <input type="radio" v-model="form.jenis_kelamin" required value="L" class="radio radio-sm radio-primary" />
                     <span class="text-sm">Laki-laki</span>
                 </label>
                 <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="radio" v-model="form.jenis_kelamin" value="P" class="radio radio-sm radio-primary" />
+                    <input type="radio" v-model="form.jenis_kelamin" required value="P" class="radio radio-sm radio-primary" />
                     <span class="text-sm">Perempuan</span>
                 </label>
             </div>
+            <p v-if="form.errors.jenis_kelamin" class="text-xs text-red-500 mt-1">{{ form.errors.jenis_kelamin }}</p>
         </div>
 
         <!-- Asal Sekolah -->
@@ -180,6 +198,7 @@ const formatPhone = () => {
             <input
                 v-model="form.asal_sekolah"
                 type="text"
+                required
                 placeholder="Nama sekolah / kampus"
                 class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                 :class="{ 'border-red-300 bg-red-50': form.errors.asal_sekolah }"

@@ -33,6 +33,32 @@ const memberFilter = ref(props.filters.member_id || '')
 const startDate = ref(props.filters.start_date || '')
 const endDate = ref(props.filters.end_date || '')
 
+// Searchable member
+const memberSearch = ref('')
+const showMemberDropdown = ref(false)
+const filteredMembers = computed(() => {
+    if (!memberSearch.value) return props.members
+    const s = memberSearch.value.toLowerCase()
+    return props.members.filter(m =>
+        m.nama_lengkap.toLowerCase().includes(s)
+    )
+})
+const selectedMemberName = computed(() => {
+    const m = props.members.find(m => String(m.id) === String(memberFilter.value))
+    return m ? m.nama_lengkap : ''
+})
+const selectMember = (m) => {
+    memberFilter.value = m.id
+    memberSearch.value = ''
+    showMemberDropdown.value = false
+    applyFilters()
+}
+const clearMember = () => {
+    memberFilter.value = ''
+    memberSearch.value = ''
+    showMemberDropdown.value = false
+}
+
 const applyFilters = () => {
     router.get('/progresses', {
         member_id: memberFilter.value || undefined,
@@ -43,6 +69,7 @@ const applyFilters = () => {
 
 const clearFilters = () => {
     memberFilter.value = ''
+    memberSearch.value = ''
     startDate.value = ''
     endDate.value = ''
     router.get('/progresses', {}, { preserveState: true })
@@ -129,16 +156,49 @@ const truncate = (str, len = 80) => {
         </div>
 
         <!-- Filters -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4" @click="showMemberDropdown = false">
             <div class="flex flex-col sm:flex-row gap-3">
-                <select
-                    v-model="memberFilter"
-                    @change="applyFilters"
-                    class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white min-w-[160px]"
-                >
-                    <option value="">Semua Anggota</option>
-                    <option v-for="m in members" :key="m.id" :value="m.id">{{ m.nama_lengkap }}</option>
-                </select>
+                <!-- Searchable Member Filter -->
+                <div class="relative min-w-[200px]">
+                    <input
+                        type="text"
+                        v-model="memberSearch"
+                        @click.stop="showMemberDropdown = true"
+                        @focus="showMemberDropdown = true"
+                        placeholder="Cari anggota..."
+                        class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all bg-white pr-16"
+                    />
+                    <!-- Selected label overlay -->
+                    <div v-if="selectedMemberName && !memberSearch" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-700 pointer-events-none truncate max-w-[130px]">
+                        {{ selectedMemberName }}
+                    </div>
+                    <!-- Clear button -->
+                    <button v-if="memberFilter" @click.stop="clearMember" class="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                        <span class="material-symbols-rounded text-[16px]">close</span>
+                    </button>
+                    <span class="material-symbols-rounded absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+
+                    <!-- Dropdown -->
+                    <div v-if="showMemberDropdown" class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto" @click.stop>
+                        <div
+                            class="px-4 py-2.5 hover:bg-slate-50 cursor-pointer text-sm text-slate-500 border-b border-slate-50"
+                            @click.stop="clearMember(); showMemberDropdown = false"
+                        >
+                            Semua Anggota
+                        </div>
+                        <div
+                            v-for="m in filteredMembers"
+                            :key="m.id"
+                            @click.stop="selectMember(m)"
+                            class="px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors border-b border-slate-50 last:border-0 text-sm font-medium text-slate-700"
+                        >
+                            {{ m.nama_lengkap }}
+                        </div>
+                        <div v-if="filteredMembers.length === 0" class="px-4 py-4 text-center text-sm text-slate-400">
+                            Anggota tidak ditemukan
+                        </div>
+                    </div>
+                </div>
                 <div class="flex items-center gap-2">
                     <VueDatePicker
                         v-model="startDate"

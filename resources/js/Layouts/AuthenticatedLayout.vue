@@ -21,15 +21,19 @@ const pendingMembersCount = ref(0)
 
 const closeSidebar = () => { sidebarOpen.value = false }
 
+const fetchPendingCount = () => {
+    if (user.value?.role !== 'admin') return
+    axios.get('/internal/pending-members-count')
+        .then(res => {
+            pendingMembersCount.value = Number(res.data?.count) || 0
+        })
+        .catch(() => {})
+}
+
 onMounted(() => {
-    // Only fetch if admin
-    if (user.value?.role === 'admin') {
-        axios.get('/internal/pending-members-count')
-            .then(res => {
-                pendingMembersCount.value = res.data.count || 0
-            })
-            .catch(err => {})
-    }
+    fetchPendingCount()
+    // Re-fetch after each Inertia navigation so badge stays in sync
+    router.on('finish', () => fetchPendingCount())
 })
 
 // Navigation items

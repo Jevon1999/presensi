@@ -1,23 +1,13 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import BotSettings from './Partials/BotSettings.vue'
-import MessageTemplates from './Partials/MessageTemplates.vue'
 import SendMessage from './Partials/SendMessage.vue'
-import { ref } from 'vue'
 
 defineOptions({ layout: AuthenticatedLayout })
 
 const props = defineProps({
     config: { type: Object, default: () => ({}) },
 })
-
-// Shared ref: when admin clicks a template, its text gets injected here
-// and SendMessage watches this to fill the textarea
-const injectedMessage = ref('')
-
-const onTemplateSelect = (text) => {
-    injectedMessage.value = text
-}
 </script>
 
 <template>
@@ -29,15 +19,12 @@ const onTemplateSelect = (text) => {
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <!-- Left Column -->
-            <div class="space-y-4">
-                <BotSettings :config="config" />
-            </div>
+            <!-- Left Column: Bot Settings + Templates (merged) -->
+            <BotSettings :config="config" />
 
-            <!-- Right Column -->
+            <!-- Right Column: Send Message -->
             <div class="space-y-4">
-                <SendMessage :injected-message="injectedMessage" />
-                <MessageTemplates :config="config" @select-template="onTemplateSelect" />
+                <SendMessage />
             </div>
         </div>
     </div>

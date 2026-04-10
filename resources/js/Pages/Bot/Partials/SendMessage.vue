@@ -18,7 +18,8 @@ const broadcastForm = useForm({
 })
 
 // Member lookup state
-const memberLookup = ref(null)      // { found, member } | null
+const memberLookup = ref(null)      // { found, members: [] } | null
+const selectedMember = ref(null)
 const lookupLoading = ref(false)
 const lookupTimer = ref(null)
 
@@ -33,7 +34,6 @@ watch(() => props.injectedMessage, (val) => {
     }
 })
 
-// When tab changes and injectedMessage is set, also fill the new tab
 watch(activeTab, () => {
     if (props.injectedMessage) {
         if (activeTab.value === 'single') {
@@ -46,13 +46,15 @@ watch(activeTab, () => {
 
 // Debounced member lookup on phone input
 const onPhoneInput = () => {
+    if (selectedMember.value) {
+        selectedMember.value = null
+    }
     memberLookup.value = null
     singleForm.clearErrors('phone')
 
     if (lookupTimer.value) clearTimeout(lookupTimer.value)
 
-    const raw = singleForm.phone.replace(/[^0-9]/g, '')
-    if (raw.length < 8) return
+    if (singleForm.phone.length < 3) return
 
     lookupLoading.value = true
     lookupTimer.value = setTimeout(async () => {
@@ -63,15 +65,21 @@ const onPhoneInput = () => {
             const data = await res.json()
             memberLookup.value = data
         } catch {
-            memberLookup.value = { found: false, member: null }
+            memberLookup.value = { found: false, members: [] }
         } finally {
             lookupLoading.value = false
         }
-    }, 600)
+    }, 400)
+}
+
+const selectMember = (member) => {
+    selectedMember.value = member
+    singleForm.phone = member.no_hp
+    memberLookup.value = null // close dropdown
 }
 
 const canSendSingle = () => {
-    return memberLookup.value?.found && singleForm.message && !singleForm.processing
+    return selectedMember.value && singleForm.message && !singleForm.processing
 }
 
 const sendSingle = () => {
@@ -80,6 +88,7 @@ const sendSingle = () => {
         preserveScroll: true,
         onSuccess: () => {
             singleForm.reset()
+            selectedMember.value = null
             memberLookup.value = null
         },
     })
@@ -121,18 +130,17 @@ const sendBroadcast = () => {
         <!-- Single Message -->
         <form v-if="activeTab === 'single'" @submit.prevent="sendSingle" class="space-y-3">
             <div>
-                <label class="block text-xs font-semibold text-slate-600 mb-1.5">No. HP Member Tujuan</label>
+                <label class="block text-xs font-semibold text-slate-600 mb-1.5">Ketik Nama atau No. HP Member</label>
                 <div class="relative">
                     <input
                         v-model="singleForm.phone"
                         @input="onPhoneInput"
                         type="text"
-                        placeholder="08xxxxxxxxxx"
+                        placeholder="Ketik minimal 3 huruf/angka..."
                         class="w-full px-3.5 py-2.5 text-sm rounded-xl border focus:ring-2 outline-none transition-all pr-9"
                         :class="{
-                            'border-red-300 focus:border-red-400 focus:ring-red-100': singleForm.errors.phone || (memberLookup && !memberLookup.found && singleForm.phone),
-                            'border-emerald-300 focus:border-emerald-400 focus:ring-emerald-100': memberLookup && memberLookup.found,
-                            'border-slate-200 focus:border-blue-400 focus:ring-blue-100': !singleForm.errors.phone && !(memberLookup && !memberLookup.found && singleForm.phone) && !(memberLookup && memberLookup.found),
+                            'border-emerald-300 focus:border-emerald-400 focus:ring-emerald-100': selectedMember,
+                            'border-slate-200 focus:border-blue-400 focus:ring-blue-100': !selectedMember,
                         }"
                     />
                     <!-- loading spinner -->
@@ -142,27 +150,31 @@ const sendBroadcast = () => {
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                         </svg>
                     </span>
-                    <!-- found icon -->
-                    <span v-else-if="memberLookup && memberLookup.found" class="material-symbols-rounded absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 text-[18px]">check_circle</span>
-                    <!-- not found icon -->
-                    <span v-else-if="memberLookup && !memberLookup.found && singleForm.phone" class="material-symbols-rounded absolute right-3 top-1/2 -translate-y-1/2 text-red-400 text-[18px]">cancel</span>
-                </div>
-
-                <!-- Member found info badge -->
-                <div v-if="memberLookup && memberLookup.found" class="mt-2 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
-                    <span class="material-symbols-rounded text-emerald-500 text-[16px]">person</span>
-                    <div>
-                        <p class="text-xs font-bold text-emerald-700">{{ memberLookup.member.nama_lengkap }}</p>
-                        <p class="text-[10px] text-emerald-500">
-                            {{ memberLookup.member.status_aktif ? 'Anggota Aktif' : 'Anggota Tidak Aktif' }}
-                        </p>
+                    <!-- Autocomplete Dropdown -->
+                    <div v-if="memberLookup && memberLookup.members && memberLookup.members.length > 0" class="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden py-1">
+                        <button v-for="member in memberLookup.members" :key="member.id" type="button" @click="selectMember(member)" class="w-full text-left px-4 py-2 hover:bg-slate-50 border-b border-slate-100 last:border-0 transition-colors flex flex-col gap-0.5">
+                            <span class="text-sm font-bold text-slate-700">{{ member.nama_lengkap }}</span>
+                            <span class="text-[11px] text-slate-500">{{ member.no_hp }}</span>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Not a member warning -->
-                <div v-else-if="memberLookup && !memberLookup.found && singleForm.phone" class="mt-2 flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-                    <span class="material-symbols-rounded text-red-400 text-[16px]">person_off</span>
-                    <p class="text-xs text-red-600 font-medium">Nomor ini tidak terdaftar sebagai member. Pesan tidak dapat dikirim.</p>
+                <!-- Not found info -->
+                <div v-if="memberLookup && !memberLookup.found" class="mt-2 flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+                    <span class="material-symbols-rounded text-slate-400 text-[16px]">search_off</span>
+                    <p class="text-[11px] text-slate-500 font-medium">Anggota tidak ditemukan. Coba ubah kata kunci.</p>
+                </div>
+
+                <!-- Selected Member info badge -->
+                <div v-if="selectedMember" class="mt-2 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                    <span class="material-symbols-rounded text-emerald-500 text-[16px]">person_check</span>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-emerald-700">{{ selectedMember.nama_lengkap }}</p>
+                        <p class="text-[10px] text-emerald-600">
+                            {{ selectedMember.no_hp }} &middot; {{ selectedMember.status_aktif ? 'Aktif' : 'Tidak Aktif' }}
+                        </p>
+                    </div>
+                    <button type="button" @click="selectedMember = null; singleForm.phone = ''" class="material-symbols-rounded text-slate-400 hover:text-red-500 text-[18px]">close</button>
                 </div>
 
                 <p v-if="singleForm.errors.phone" class="text-xs text-red-500 mt-1">{{ singleForm.errors.phone }}</p>
@@ -186,9 +198,6 @@ const sendBroadcast = () => {
             >
                 {{ singleForm.processing ? 'Mengirim...' : 'Kirim Pesan' }}
             </button>
-            <p v-if="!memberLookup?.found && singleForm.phone" class="text-[11px] text-center text-slate-400">
-                Masukkan nomor HP member untuk melanjutkan
-            </p>
         </form>
 
         <!-- Broadcast -->

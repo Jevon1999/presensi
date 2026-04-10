@@ -209,54 +209,63 @@ class BotController extends Controller
      */
     public function lookupMember(Request $request)
     {
-        $phone = $request->query('phone', '');
-        $phone = preg_replace('/[^0-9]/', '', $phone);
-
-        if (strlen($phone) < 8) {
-            return response()->json(['found' => false, 'member' => null]);
+        $queryStr = strtolower(trim($request->query('phone', '')));
+        
+        if (strlen($queryStr) < 3) {
+            return response()->json(['found' => false, 'members' => []]);
         }
 
         try {
-            // Fetch members and search by phone number
             $response = $this->api()->get("{$this->apiUrl}/members", [
                 'per_page' => 500,
             ]);
 
             if (!$response->successful()) {
-                return response()->json(['found' => false, 'member' => null, 'error' => 'Gagal mengambil data member.']);
+                return response()->json(['found' => false, 'members' => [], 'error' => 'Gagal mengambil data member.']);
             }
 
             $members = $response->json('data', []);
+            $matches = [];
 
-            // Normalize and compare phone
+            $queryPhone = preg_replace('/[^0-9]/', '', $queryStr);
+            if (str_starts_with($queryPhone, '0')) {
+                $queryPhone = '62' . substr($queryPhone, 1);
+            }
+
             foreach ($members as $member) {
+                if (($member['status'] ?? '') !== 'approved') {
+                    continue;
+                }
+
                 $memberPhone = preg_replace('/[^0-9]/', '', $member['no_hp'] ?? '');
-                // Normalize both to 62xxx format
                 if (str_starts_with($memberPhone, '0')) {
                     $memberPhone = '62' . substr($memberPhone, 1);
                 }
-                $inputPhone = $phone;
-                if (str_starts_with($inputPhone, '0')) {
-                    $inputPhone = '62' . substr($inputPhone, 1);
-                }
 
-                if ($memberPhone === $inputPhone && ($member['status'] ?? '') === 'approved') {
-                    return response()->json([
-                        'found' => true,
-                        'member' => [
-                            'id' => $member['id'],
-                            'nama_lengkap' => $member['nama_lengkap'],
-                            'no_hp' => $member['no_hp'],
-                            'status_aktif' => $member['status_aktif'] ?? false,
-                        ],
-                    ]);
+                $nama = strtolower($member['nama_lengkap'] ?? '');
+                
+                // Match by name or phone
+                if (str_contains($nama, $queryStr) || (!empty($queryPhone) && str_contains($memberPhone, $queryPhone))) {
+                    $matches[] = [
+                        'id' => $member['id'],
+                        'nama_lengkap' => $member['nama_lengkap'],
+                        'no_hp' => $member['no_hp'],
+                        'status_aktif' => $member['status_aktif'] ?? false,
+                    ];
+                    
+                    if (count($matches) >= 5) {
+                        break;
+                    }
                 }
             }
 
-            return response()->json(['found' => false, 'member' => null]);
+            return response()->json([
+                'found' => count($matches) > 0,
+                'members' => $matches,
+            ]);
         } catch (\Exception $e) {
             Log::error('lookupMember error: ' . $e->getMessage());
-            return response()->json(['found' => false, 'member' => null, 'error' => 'Terjadi kesalahan.']);
+            return response()->json(['found' => false, 'members' => [], 'error' => 'Terjadi kesalahan.']);
         }
     }
 

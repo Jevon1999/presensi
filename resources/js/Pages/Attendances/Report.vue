@@ -5,8 +5,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Badge from '@/Components/Badge.vue'
 import EmptyState from '@/Components/EmptyState.vue'
 
-import { VueDatePicker } from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
+import flatPickr from 'vue-flatpickr-component'
+import 'flatpickr/dist/flatpickr.css'
 
 defineOptions({ layout: AuthenticatedLayout })
 
@@ -17,8 +17,15 @@ const props = defineProps({
     filters: { type: Object, default: () => ({}) },
 })
 
-const startDate = ref(props.filters.start_date || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10))
-const endDate = ref(props.filters.end_date || new Date().toISOString().slice(0, 10))
+const formatYMD = (d) => {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+}
+
+const startDate = ref(props.filters.start_date || formatYMD(new Date(new Date().getFullYear(), new Date().getMonth(), 1)))
+const endDate = ref(props.filters.end_date || formatYMD(new Date()))
 const officeFilter = ref(props.filters.office_id || '')
 const memberFilter = ref(props.filters.member_id || '')
 
@@ -108,24 +115,18 @@ const formatTime = (t) => t || '-'
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1.5">Tanggal Mulai</label>
-                        <VueDatePicker
+                        <flat-pickr
                             v-model="startDate"
-                            :enable-time-picker="false"
-                            model-type="yyyy-MM-dd"
-                            format="dd/MM/yyyy"
-                            auto-apply
-                            input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                            :config="{ altInput: true, altFormat: 'd/m/Y', dateFormat: 'Y-m-d', disableMobile: true }"
+                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                         />
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1.5">Tanggal Akhir</label>
-                        <VueDatePicker
+                        <flat-pickr
                             v-model="endDate"
-                            :enable-time-picker="false"
-                            model-type="yyyy-MM-dd"
-                            format="dd/MM/yyyy"
-                            auto-apply
-                            input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                            :config="{ altInput: true, altFormat: 'd/m/Y', dateFormat: 'Y-m-d', disableMobile: true }"
+                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                         />
                     </div>
                 </div>
@@ -133,7 +134,7 @@ const formatTime = (t) => t || '-'
                     <select
                         v-model="officeFilter"
                         @change="applyFilters"
-                        class="w-full sm:w-auto px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white sm:min-w-[140px]"
+                        class="w-full sm:w-auto px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white sm:min-w-[140px]"
                     >
                         <option value="">Semua Kantor</option>
                         <option v-for="o in offices" :key="o.id" :value="o.id">{{ o.name }}</option>
@@ -146,7 +147,7 @@ const formatTime = (t) => t || '-'
                             v-model="memberSearch"
                             @click.stop="showMemberDropdown = true"
                             placeholder="Cari anggota..."
-                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all bg-white"
+                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none transition-all bg-white"
                         />
                         <div v-if="selectedMemberName && !memberSearch" class="absolute right-10 top-1/2 -translate-y-1/2 text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-lg truncate max-w-[120px]">
                             {{ selectedMemberName }}

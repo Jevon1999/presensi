@@ -1,8 +1,15 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3'
 import { watch, ref, computed } from 'vue'
-import { VueDatePicker } from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
+import flatPickr from 'vue-flatpickr-component'
+import 'flatpickr/dist/flatpickr.css'
+
+const formatYMD = (d) => {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+}
 
 const props = defineProps({
     progress: { type: Object, default: null },
@@ -16,7 +23,7 @@ const isEdit = !!props.progress
 
 const form = useForm({
     member_id: props.progress?.member_id || '',
-    tanggal: props.progress?.tanggal || new Date().toISOString().slice(0, 10),
+    tanggal: props.progress?.tanggal || formatYMD(new Date()),
     description: props.progress?.description || '',
 })
 
@@ -44,7 +51,7 @@ const selectMember = (m) => {
 watch(() => props.progress, (p) => {
     if (p) {
         form.member_id = p.member_id || ''
-        form.tanggal = p.tanggal || new Date().toISOString().slice(0, 10)
+        form.tanggal = p.tanggal || formatYMD(new Date())
         form.description = p.description || ''
     }
 })
@@ -66,7 +73,7 @@ const submit = () => {
                     v-model="memberSearch"
                     @click.stop="showMemberDropdown = true"
                     placeholder="Cari nama anggota..."
-                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all bg-white"
+                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none transition-all bg-white"
                     :class="{ 'border-red-300 bg-red-50': form.errors.member_id }"
                 />
                 <div v-if="selectedMemberName && !memberSearch" class="absolute right-10 top-1/2 -translate-y-1/2 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
@@ -101,14 +108,11 @@ const submit = () => {
         <!-- Tanggal -->
         <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tanggal <span class="text-red-400">*</span></label>
-            <VueDatePicker
+            <flat-pickr
                 v-model="form.tanggal"
-                :enable-time-picker="false"
-                model-type="yyyy-MM-dd"
-                format="dd/MM/yyyy"
-                auto-apply
+                :config="{ altInput: true, altFormat: 'd/m/Y', dateFormat: 'Y-m-d', disableMobile: true }"
                 placeholder="Pilih tanggal"
-                input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                 :class="{ 'border-red-300': form.errors.tanggal }"
             />
             <p v-if="form.errors.tanggal" class="text-xs text-red-500 mt-1">{{ form.errors.tanggal }}</p>
@@ -121,7 +125,7 @@ const submit = () => {
                 v-model="form.description"
                 rows="5"
                 placeholder="Jelaskan progress kerja hari ini..."
-                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all resize-none"
+                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all resize-none"
                 :class="{ 'border-red-300 bg-red-50': form.errors.description }"
             ></textarea>
             <p v-if="form.errors.description" class="text-xs text-red-500 mt-1">{{ form.errors.description }}</p>

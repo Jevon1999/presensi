@@ -2,8 +2,8 @@
 import { ref } from 'vue'
 import { Head, router } from '@inertiajs/vue3'
 import MemberLayout from '@/Layouts/MemberLayout.vue'
-import { VueDatePicker } from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
+import flatPickr from 'vue-flatpickr-component'
+import 'flatpickr/dist/flatpickr.css'
 
 defineOptions({ layout: MemberLayout })
 
@@ -76,26 +76,20 @@ const formatTime = (t) => {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tanggal Mulai</label>
-                    <VueDatePicker
+                    <flat-pickr
                         v-model="startDate"
-                        :enable-time-picker="false"
-                        model-type="yyyy-MM-dd"
-                        format="dd/MM/yyyy"
-                        auto-apply
+                        :config="{ altInput: true, altFormat: 'd/m/Y', dateFormat: 'Y-m-d', disableMobile: true }"
                         placeholder="Pilih tanggal mulai"
-                        input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all"
+                        class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none transition-all"
                     />
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tanggal Akhir</label>
-                    <VueDatePicker
+                    <flat-pickr
                         v-model="endDate"
-                        :enable-time-picker="false"
-                        model-type="yyyy-MM-dd"
-                        format="dd/MM/yyyy"
-                        auto-apply
+                        :config="{ altInput: true, altFormat: 'd/m/Y', dateFormat: 'Y-m-d', disableMobile: true }"
                         placeholder="Pilih tanggal akhir"
-                        input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all"
+                        class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none transition-all"
                     />
                 </div>
             </div>

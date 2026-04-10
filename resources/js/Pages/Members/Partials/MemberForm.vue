@@ -1,8 +1,8 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3'
 import { watch, ref, computed } from 'vue'
-import { VueDatePicker } from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
+import flatPickr from 'vue-flatpickr-component'
+import 'flatpickr/dist/flatpickr.css'
 
 const props = defineProps({
     member: { type: Object, default: null },
@@ -129,7 +129,7 @@ const formatPhone = () => {
                     @click.stop="showUserDropdown = true"
                     @focus="showUserDropdown = true"
                     placeholder="Cari user (ketik nama atau email)..."
-                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none transition-all bg-white pr-10"
+                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none transition-all bg-white pr-10"
                     :class="{ 'border-red-300 bg-red-50': form.errors.user_id || form.errors.nama_lengkap }"
                 />
                 <span class="material-symbols-rounded absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
@@ -170,7 +170,7 @@ const formatPhone = () => {
                 type="text"
                 required
                 placeholder="+628xxxxxxxxxx"
-                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                 :class="{ 'border-red-300 bg-red-50': form.errors.no_hp }"
             />
             <p v-if="form.errors.no_hp" class="text-xs text-red-500 mt-1">{{ form.errors.no_hp }}</p>
@@ -200,7 +200,7 @@ const formatPhone = () => {
                 type="text"
                 required
                 placeholder="Nama sekolah / kampus"
-                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                 :class="{ 'border-red-300 bg-red-50': form.errors.asal_sekolah }"
             />
             <p v-if="form.errors.asal_sekolah" class="text-xs text-red-500 mt-1">{{ form.errors.asal_sekolah }}</p>
@@ -214,7 +214,7 @@ const formatPhone = () => {
                 type="text"
                 required
                 placeholder="Contoh: Teknik Informatika"
-                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                 :class="{ 'border-red-300 bg-red-50': form.errors.jurusan }"
             />
             <p v-if="form.errors.jurusan" class="text-xs text-red-500 mt-1">{{ form.errors.jurusan }}</p>
@@ -226,7 +226,7 @@ const formatPhone = () => {
             <select
                 v-model="form.office_id"
                 required
-                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white"
+                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white"
                 :class="{ 'border-red-300 bg-red-50': form.errors.office_id }"
             >
                 <option value="">Pilih kantor</option>
@@ -239,24 +239,18 @@ const formatPhone = () => {
         <div class="grid grid-cols-2 gap-3">
             <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1.5">Mulai Magang <span class="text-red-400">*</span></label>
-                <VueDatePicker 
+                <flat-pickr 
                     v-model="form.tanggal_mulai_magang"
-                    :enable-time-picker="false"
-                    model-type="yyyy-MM-dd"
-                    format="dd MMM yyyy"
-                    auto-apply
-                    input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    :config="{ altInput: true, altFormat: 'd/m/Y', dateFormat: 'Y-m-d', disableMobile: true }"
+                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                 />
             </div>
             <div>
                 <label class="block text-xs font-semibold text-slate-600 mb-1.5">Selesai Magang</label>
-                <VueDatePicker 
+                <flat-pickr 
                     v-model="form.tanggal_selesai_magang"
-                    :enable-time-picker="false"
-                    model-type="yyyy-MM-dd"
-                    format="dd MMM yyyy"
-                    auto-apply
-                    input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    :config="{ altInput: true, altFormat: 'd/m/Y', dateFormat: 'Y-m-d', disableMobile: true }"
+                    class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                 />
             </div>
         </div>

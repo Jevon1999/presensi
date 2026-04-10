@@ -8,8 +8,8 @@ import Badge from '@/Components/Badge.vue'
 import EmptyState from '@/Components/EmptyState.vue'
 import AttendanceDetail from './Partials/AttendanceDetail.vue'
 import ResetForm from './Partials/ResetForm.vue'
-import { VueDatePicker } from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
+import flatPickr from 'vue-flatpickr-component'
+import 'flatpickr/dist/flatpickr.css'
 
 defineOptions({ layout: AuthenticatedLayout })
 
@@ -28,8 +28,15 @@ const selectedAttendance = ref(null)
 const detailLoading = ref(false)
 const resetProcessing = ref(false)
 
+const formatYMD = (d) => {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+}
+
 // Filters
-const dateFilter = ref(props.filters.date || new Date().toISOString().slice(0, 10))
+const dateFilter = ref(props.filters.date || formatYMD(new Date()))
 const officeFilter = ref(props.filters.office_id || '')
 const statusFilter = ref(props.filters.status || '')
 
@@ -42,7 +49,7 @@ const applyFilters = () => {
 }
 
 const clearFilters = () => {
-    dateFilter.value = new Date().toISOString().slice(0, 10)
+    dateFilter.value = formatYMD(new Date())
     officeFilter.value = ''
     statusFilter.value = ''
     router.get('/attendances', { date: dateFilter.value }, { preserveState: true })
@@ -127,19 +134,16 @@ const summaryCards = computed(() => [
         <!-- Filters -->
         <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
             <div class="flex flex-col sm:flex-row gap-3">
-                <VueDatePicker
+                <flat-pickr
                     v-model="dateFilter"
+                    :config="{ altInput: true, altFormat: 'd/m/Y', dateFormat: 'Y-m-d', disableMobile: true }"
                     @update:model-value="applyFilters"
-                    :enable-time-picker="false"
-                    model-type="yyyy-MM-dd"
-                    format="dd/MM/yyyy"
-                    auto-apply
-                    input-class-name="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all w-40"
+                    class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all w-40"
                 />
                 <select
                     v-model="officeFilter"
                     @change="applyFilters"
-                    class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white min-w-[140px]"
+                    class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white min-w-[140px]"
                 >
                     <option value="">Semua Kantor</option>
                     <option v-for="o in offices" :key="o.id" :value="o.id">{{ o.name }}</option>
@@ -147,7 +151,7 @@ const summaryCards = computed(() => [
                 <select
                     v-model="statusFilter"
                     @change="applyFilters"
-                    class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white min-w-[120px]"
+                    class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white min-w-[120px]"
                 >
                     <option value="">Semua Status</option>
                     <option value="hadir">Hadir</option>

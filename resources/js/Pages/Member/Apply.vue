@@ -1,8 +1,8 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { Head, useForm, usePage, Link, router } from '@inertiajs/vue3'
-import { VueDatePicker } from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
+import flatPickr from 'vue-flatpickr-component'
+import 'flatpickr/dist/flatpickr.css'
 import Toast from '@/Components/Toast.vue'
 import logo from '../../../images/logo_global.png'
 
@@ -141,7 +141,7 @@ watch(() => form.asal_sekolah, (val) => {
                         <div class="relative">
                             <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">phone</span>
                             <input v-model="form.no_hp" @blur="formatPhone" type="text" required placeholder="+628xxxxxxxxxx"
-                                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                                 :class="{ 'border-red-300 bg-red-50': form.errors.no_hp }" />
                         </div>
                         <p v-if="form.errors.no_hp" class="text-xs text-red-500 mt-1">{{ form.errors.no_hp }}</p>
@@ -151,7 +151,7 @@ watch(() => form.asal_sekolah, (val) => {
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1.5">Kantor Penempatan</label>
                         <select v-model="form.office_id" required
-                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none bg-white"
+                            class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none bg-white"
                             :class="{ 'border-red-300 bg-red-50': form.errors.office_id }">
                             <option value="">Pilih kantor...</option>
                             <option v-for="office in offices" :key="office.id" :value="office.id">{{ office.name }}</option>
@@ -181,7 +181,7 @@ watch(() => form.asal_sekolah, (val) => {
                         <div class="relative">
                             <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">school</span>
                             <input v-model="form.asal_sekolah" type="text" required placeholder="Nama sekolah atau universitas"
-                                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                                 :class="{ 'border-red-300 bg-red-50': form.errors.asal_sekolah }" />
                         </div>
                         <p v-if="form.errors.asal_sekolah" class="text-xs text-red-500 mt-1">{{ form.errors.asal_sekolah }}</p>
@@ -193,7 +193,7 @@ watch(() => form.asal_sekolah, (val) => {
                         <div class="relative">
                             <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">menu_book</span>
                             <input v-model="form.jurusan" type="text" required placeholder="Contoh: Teknik Informatika"
-                                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                                 :class="{ 'border-red-300 bg-red-50': form.errors.jurusan }" />
                         </div>
                         <p v-if="form.errors.jurusan" class="text-xs text-red-500 mt-1">{{ form.errors.jurusan }}</p>
@@ -203,27 +203,21 @@ watch(() => form.asal_sekolah, (val) => {
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tanggal Mulai Magang</label>
-                            <VueDatePicker
+                            <flat-pickr
                                 v-model="form.tanggal_mulai_magang"
-                                :enable-time-picker="false"
-                                model-type="yyyy-MM-dd"
-                                format="dd MMM yyyy"
-                                auto-apply
+                                :config="{ altInput: true, altFormat: 'd/m/Y', dateFormat: 'Y-m-d', disableMobile: true }"
                                 placeholder="Pilih tanggal mulai"
-                                input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                             />
                             <p v-if="form.errors.tanggal_mulai_magang" class="text-xs text-red-500 mt-1">{{ form.errors.tanggal_mulai_magang }}</p>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tanggal Selesai Magang</label>
-                            <VueDatePicker
+                            <flat-pickr
                                 v-model="form.tanggal_selesai_magang"
-                                :enable-time-picker="false"
-                                model-type="yyyy-MM-dd"
-                                format="dd MMM yyyy"
-                                auto-apply
+                                :config="{ altInput: true, altFormat: 'd/m/Y', dateFormat: 'Y-m-d', disableMobile: true }"
                                 placeholder="Pilih tanggal selesai"
-                                input-class-name="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                             />
                             <p v-if="form.errors.tanggal_selesai_magang" class="text-xs text-red-500 mt-1">{{ form.errors.tanggal_selesai_magang }}</p>
                         </div>

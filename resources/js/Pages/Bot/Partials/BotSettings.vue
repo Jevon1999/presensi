@@ -3,7 +3,8 @@ import { ref, computed } from 'vue'
 import { useForm, usePage, router } from '@inertiajs/vue3'
 import { watch } from 'vue'
 import Toast from '@/Components/Toast.vue'
-import { VueDatePicker } from '@vuepic/vue-datepicker'
+import flatPickr from 'vue-flatpickr-component'
+import 'flatpickr/dist/flatpickr.css'
 
 const props = defineProps({
     config: { type: Object, default: () => ({}) },
@@ -75,10 +76,10 @@ const save = () => {
                     <p class="text-xs text-slate-400">Bot aktif akan merespons pesan masuk</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="text-xs font-semibold" :class="form.is_active ? 'text-green-600' : 'text-slate-400'">
+                    <span class="text-xs font-semibold" :class="form.is_active ? 'text-blue-600' : 'text-slate-400'">
                         {{ form.is_active ? 'ON' : 'OFF' }}
                     </span>
-                    <input type="checkbox" v-model="form.is_active" @change="save" class="toggle toggle-primary" />
+                    <input type="checkbox" v-model="form.is_active" @change="save" class="toggle toggle-sm toggle-primary" />
                 </div>
             </div>
 
@@ -89,17 +90,20 @@ const save = () => {
                         <p class="text-sm font-medium text-slate-700">Pengingat Check-In</p>
                         <p class="text-xs text-slate-400">Kirim pengingat absensi pagi ke anggota</p>
                     </div>
-                    <input type="checkbox" v-model="form.reminder_enabled" @change="save" class="toggle toggle-primary" />
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold" :class="form.reminder_enabled ? 'text-blue-600' : 'text-slate-400'">
+                            {{ form.reminder_enabled ? 'ON' : 'OFF' }}
+                        </span>
+                        <input type="checkbox" v-model="form.reminder_enabled" @change="save" class="toggle toggle-sm toggle-primary" />
+                    </div>
                 </div>
                 <div v-if="form.reminder_enabled">
                     <label class="block text-xs text-slate-500 mb-1">Jam Pengingat Check-In</label>
-                    <VueDatePicker
+                    <flat-pickr
                         v-model="form.reminder_time"
-                        time-picker
-                        model-type="HH:mm"
-                        :is-24="true"
-                        input-class-name="px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none bg-white w-32"
-                        @update:model-value="save"
+                        :config="{ enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true, disableMobile: true }"
+                        class="px-3.5 py-2 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none bg-white w-32"
+                        @on-change="save"
                     />
                 </div>
             </div>
@@ -111,17 +115,20 @@ const save = () => {
                         <p class="text-sm font-medium text-slate-700">Pengingat Check-Out</p>
                         <p class="text-xs text-slate-400">Kirim pengingat absensi pulang ke anggota</p>
                     </div>
-                    <input type="checkbox" v-model="form.checkout_reminder_enabled" @change="save" class="toggle toggle-primary" />
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold" :class="form.checkout_reminder_enabled ? 'text-blue-600' : 'text-slate-400'">
+                            {{ form.checkout_reminder_enabled ? 'ON' : 'OFF' }}
+                        </span>
+                        <input type="checkbox" v-model="form.checkout_reminder_enabled" @change="save" class="toggle toggle-sm toggle-primary" />
+                    </div>
                 </div>
                 <div v-if="form.checkout_reminder_enabled">
                     <label class="block text-xs text-slate-500 mb-1">Jam Pengingat Check-Out</label>
-                    <VueDatePicker
+                    <flat-pickr
                         v-model="form.checkout_reminder_time"
-                        time-picker
-                        model-type="HH:mm"
-                        :is-24="true"
-                        input-class-name="px-3.5 py-2 text-sm rounded-xl border border-slate-200 focus:border-blue-400 outline-none bg-white w-32"
-                        @update:model-value="save"
+                        :config="{ enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true, disableMobile: true }"
+                        class="px-3.5 py-2 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none bg-white w-32"
+                        @on-change="save"
                     />
                 </div>
             </div>
@@ -135,13 +142,11 @@ const save = () => {
                 <p class="text-xs text-slate-500">Check-in setelah jam ini dianggap <strong>terlambat</strong></p>
                 <div>
                     <label class="block text-xs text-slate-500 mb-1">Jam Batas Telat</label>
-                    <VueDatePicker
+                    <flat-pickr
                         v-model="form.check_in_late_threshold"
-                        time-picker
-                        model-type="HH:mm"
-                        :is-24="true"
-                        input-class-name="px-3.5 py-2 text-sm rounded-xl border border-amber-200 focus:border-amber-400 outline-none bg-white w-32"
-                        @update:model-value="save"
+                        :config="{ enableTime: true, noCalendar: true, dateFormat: 'H:i', time_24hr: true, disableMobile: true }"
+                        class="px-3.5 py-2 text-sm rounded-xl border border-amber-200 bg-white text-slate-700 focus:border-amber-400 outline-none bg-white w-32"
+                        @on-change="save"
                     />
                 </div>
                 <div class="flex items-center justify-between">
@@ -149,7 +154,12 @@ const save = () => {
                         <p class="text-sm font-medium text-slate-700">Wajib Isi Alasan</p>
                         <p class="text-xs text-slate-400">Harus kirim alasan jika terlambat</p>
                     </div>
-                    <input type="checkbox" v-model="form.require_late_reason" @change="save" class="toggle toggle-warning" />
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold" :class="form.require_late_reason ? 'text-amber-600' : 'text-slate-400'">
+                            {{ form.require_late_reason ? 'ON' : 'OFF' }}
+                        </span>
+                        <input type="checkbox" v-model="form.require_late_reason" @change="save" class="toggle toggle-sm toggle-warning" />
+                    </div>
                 </div>
             </div>
 
@@ -167,17 +177,17 @@ const save = () => {
                 
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">Template Pengingat Check-In</label>
-                    <textarea v-model="form.message_remind_check_in" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-blue-400 outline-none" @blur="save"></textarea>
+                    <textarea v-model="form.message_remind_check_in" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none" @blur="save"></textarea>
                 </div>
                 
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">Template Pengingat Check-Out</label>
-                    <textarea v-model="form.message_remind_check_out" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-blue-400 outline-none" @blur="save"></textarea>
+                    <textarea v-model="form.message_remind_check_out" rows="2" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none" @blur="save"></textarea>
                 </div>
                 
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1.5">Template Notifikasi Alpha / Telat</label>
-                    <textarea v-model="form.message_remind_late" rows="3" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 focus:border-blue-400 outline-none" @blur="save"></textarea>
+                    <textarea v-model="form.message_remind_late" rows="3" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none" @blur="save"></textarea>
                 </div>
             </div>
 

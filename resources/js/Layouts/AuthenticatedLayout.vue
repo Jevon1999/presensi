@@ -144,15 +144,19 @@ const logout = () => {
                         class="material-symbols-rounded text-[20px]"
                         :class="isActive(item.match) ? 'text-blue-600' : 'text-slate-400'"
                     >{{ item.icon }}</span>
-                    <span class="text-sm flex-1">{{ item.name }}</span>
-                    
-                    <!-- Notification Badge -->
-                    <span
-                        v-if="item.name === 'Members' && pendingMembersCount > 0"
-                        class="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 flex items-center justify-center text-white text-[10px] font-bold shadow-sm transition-all animate-pulse"
-                    >
-                        {{ pendingMembersCount }}
-                    </span>
+                    <div class="flex-1 flex items-center">
+                        <div v-if="item.name === 'Members'" class="relative pr-1">
+                            <span class="text-sm block">{{ item.name }}</span>
+                            <!-- Notification Badge (Superscript style) -->
+                            <span
+                                v-if="pendingMembersCount > 0"
+                                class="absolute -top-1.5 -right-2 min-w-[15px] h-4 px-1 rounded-full bg-red-500 flex items-center justify-center text-white text-[9px] font-bold shadow-sm transition-all animate-pulse"
+                            >
+                                {{ pendingMembersCount }}
+                            </span>
+                        </div>
+                        <span v-else class="text-sm block">{{ item.name }}</span>
+                    </div>
                 </Link>
             </nav>
 

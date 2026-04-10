@@ -285,7 +285,7 @@ const statusLabel = (status) => {
                                         <span class="material-symbols-rounded text-[18px]">cancel</span>
                                     </button>
                                 </template>
-                                <button @click="openEdit(m)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
+                                <button v-if="m.status === 'approved' && m.status_aktif" @click="openEdit(m)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
                                     <span class="material-symbols-rounded text-[18px]">edit</span>
                                 </button>
                                 <button @click="confirmDelete(m.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Hapus">
@@ -345,11 +345,17 @@ const statusLabel = (status) => {
                         Tolak
                     </button>
                 </div>
-                <div class="flex gap-2 pt-2 border-t border-slate-100">
+                <div v-if="m.status === 'approved' && m.status_aktif" class="flex gap-2 pt-2 border-t border-slate-100">
                     <button @click="openEdit(m)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors">
                         <span class="material-symbols-rounded text-[16px]">edit</span>
                         Edit
                     </button>
+                    <button @click="confirmDelete(m.id)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
+                        <span class="material-symbols-rounded text-[16px]">delete</span>
+                        Hapus
+                    </button>
+                </div>
+                <div v-else-if="m.status !== 'pending'" class="flex gap-2 pt-2 border-t border-slate-100">
                     <button @click="confirmDelete(m.id)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
                         <span class="material-symbols-rounded text-[16px]">delete</span>
                         Hapus

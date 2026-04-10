@@ -54,10 +54,21 @@ const formatPhone = () => {
     form.no_hp = v
 }
 
-// Auto UPPERCASE untuk asal_sekolah
+// Title Case helper
+const toTitleCase = (str) => {
+    if (!str) return ''
+    return str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
+}
+
+// Auto Title Case untuk asal_sekolah & jurusan
 watch(() => form.asal_sekolah, (val) => {
     const formatted = val ? val.toUpperCase() : ''
     if (val !== formatted) form.asal_sekolah = formatted
+})
+
+watch(() => form.jurusan, (val) => {
+    const formatted = toTitleCase(val)
+    if (val !== formatted) form.jurusan = formatted
 })
 </script>
 

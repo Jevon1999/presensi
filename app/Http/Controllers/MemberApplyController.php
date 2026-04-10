@@ -60,7 +60,25 @@ class MemberApplyController extends Controller
     public function submitApply(Request $request)
     {
         try {
-            $response = $this->api()->post("{$this->apiUrl}/member/apply", $request->all());
+            // Validate locally first to catch obvious errors
+            $validated = $request->validate([
+                'no_hp'                  => 'required|string',
+                'office_id'              => 'required',
+                'jenis_kelamin'          => 'required|in:L,P',
+                'asal_sekolah'           => 'required|string',
+                'jurusan'                => 'required|string',
+                'tanggal_mulai_magang'   => 'required|date',
+                'tanggal_selesai_magang' => 'nullable|date',
+            ]);
+
+            Log::info('Member apply request', ['data' => $validated]);
+
+            $response = $this->api()->post("{$this->apiUrl}/member/apply", $validated);
+
+            Log::info('Member apply API response', [
+                'status' => $response->status(),
+                'body'   => $response->json(),
+            ]);
 
             if ($response->status() === 401) {
                 session()->forget(['auth_token', 'user', 'member']);
@@ -70,11 +88,11 @@ class MemberApplyController extends Controller
             if ($response->status() === 422) {
                 $errors = $response->json('errors', []);
                 $msg = $response->json('message', 'Data tidak valid.');
-                return back()->withErrors($errors)->with('error', $msg);
+                return back()->withErrors($errors)->with('error', $msg)->withInput();
             }
 
             if (!$response->successful()) {
-                return back()->with('error', $response->json('message') ?: 'Gagal mengajukan pendaftaran.');
+                return back()->with('error', $response->json('message') ?: 'Gagal mengajukan pendaftaran. (HTTP ' . $response->status() . ')')->withInput();
             }
 
             // Update member session data
@@ -90,9 +108,11 @@ class MemberApplyController extends Controller
             }
 
             return redirect('/member/pending')->with('success', 'Pengajuan berhasil dikirim!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e; // Let Laravel handle validation exceptions
         } catch (\Exception $e) {
-            Log::error('Member apply error: ' . $e->getMessage());
-            return back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.');
+            Log::error('Member apply error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.')->withInput();
         }
     }
 

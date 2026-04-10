@@ -233,7 +233,7 @@ class BotController extends Controller
             }
 
             foreach ($members as $member) {
-                if (($member['status'] ?? '') !== 'approved') {
+                if (($member['status'] ?? '') !== 'approved' || !($member['status_aktif'] ?? false)) {
                     continue;
                 }
 
@@ -294,14 +294,14 @@ class BotController extends Controller
                 if (str_starts_with($memberPhone, '0')) {
                     $memberPhone = '62' . substr($memberPhone, 1);
                 }
-                if ($memberPhone === $phone && ($member['status'] ?? '') === 'approved') {
+                if ($memberPhone === $phone && ($member['status'] ?? '') === 'approved' && ($member['status_aktif'] ?? false)) {
                     $isMember = true;
                     break;
                 }
             }
 
             if (!$isMember) {
-                return back()->withErrors(['phone' => 'Nomor ini bukan member terdaftar. Pesan hanya dapat dikirim ke member aktif.']);
+                return back()->withErrors(['phone' => 'Nomor ini bukan member aktif. Pesan hanya dapat dikirim ke member yang sudah disetujui dan masih aktif.']);
             }
 
             $configResp = $this->api()->get("{$this->apiUrl}/bot-configs");
@@ -361,7 +361,7 @@ class BotController extends Controller
             $wahaUrl = env('WAHA_API_URL', 'https://waha.globalintermedia.online');
 
             foreach ($members as $member) {
-                if (empty($member['no_hp']) || ($member['status_aktif'] ?? false) == false) {
+                if (empty($member['no_hp']) || ($member['status_aktif'] ?? false) == false || ($member['status'] ?? '') !== 'approved') {
                     continue;
                 }
 

@@ -119,6 +119,7 @@ Route::middleware(['web'])->group(function () {
             Route::post('/send-message', [BotController::class, 'sendMessage'])->name('send-message');
             Route::post('/broadcast', [BotController::class, 'broadcastMessage'])->name('broadcast');
             Route::get('/screenshot', [BotController::class, 'screenshot'])->name('screenshot');
+            Route::get('/lookup-member', [BotController::class, 'lookupMember'])->name('lookup-member');
         });
     });
 

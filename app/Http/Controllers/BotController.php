@@ -205,7 +205,63 @@ class BotController extends Controller
     }
 
     /**
-     * Send single text message via WAHA
+     * Lookup a member by phone number (for admin send-message validation)
+     */
+    public function lookupMember(Request $request)
+    {
+        $phone = $request->query('phone', '');
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+
+        if (strlen($phone) < 8) {
+            return response()->json(['found' => false, 'member' => null]);
+        }
+
+        try {
+            // Fetch members and search by phone number
+            $response = $this->api()->get("{$this->apiUrl}/members", [
+                'per_page' => 500,
+            ]);
+
+            if (!$response->successful()) {
+                return response()->json(['found' => false, 'member' => null, 'error' => 'Gagal mengambil data member.']);
+            }
+
+            $members = $response->json('data', []);
+
+            // Normalize and compare phone
+            foreach ($members as $member) {
+                $memberPhone = preg_replace('/[^0-9]/', '', $member['no_hp'] ?? '');
+                // Normalize both to 62xxx format
+                if (str_starts_with($memberPhone, '0')) {
+                    $memberPhone = '62' . substr($memberPhone, 1);
+                }
+                $inputPhone = $phone;
+                if (str_starts_with($inputPhone, '0')) {
+                    $inputPhone = '62' . substr($inputPhone, 1);
+                }
+
+                if ($memberPhone === $inputPhone && ($member['status'] ?? '') === 'approved') {
+                    return response()->json([
+                        'found' => true,
+                        'member' => [
+                            'id' => $member['id'],
+                            'nama_lengkap' => $member['nama_lengkap'],
+                            'no_hp' => $member['no_hp'],
+                            'status_aktif' => $member['status_aktif'] ?? false,
+                        ],
+                    ]);
+                }
+            }
+
+            return response()->json(['found' => false, 'member' => null]);
+        } catch (\Exception $e) {
+            Log::error('lookupMember error: ' . $e->getMessage());
+            return response()->json(['found' => false, 'member' => null, 'error' => 'Terjadi kesalahan.']);
+        }
+    }
+
+    /**
+     * Send single text message via WAHA — only to registered members
      */
     public function sendMessage(Request $request)
     {
@@ -215,17 +271,36 @@ class BotController extends Controller
         ]);
 
         try {
+            // Validate: phone must belong to an approved member
+            $phone = preg_replace('/[^0-9]/', '', $request->phone);
+            if (str_starts_with($phone, '0')) {
+                $phone = '62' . substr($phone, 1);
+            }
+
+            $membersResp = $this->api()->get("{$this->apiUrl}/members", ['per_page' => 500]);
+            $members = $membersResp->json('data', []);
+            $isMember = false;
+            foreach ($members as $member) {
+                $memberPhone = preg_replace('/[^0-9]/', '', $member['no_hp'] ?? '');
+                if (str_starts_with($memberPhone, '0')) {
+                    $memberPhone = '62' . substr($memberPhone, 1);
+                }
+                if ($memberPhone === $phone && ($member['status'] ?? '') === 'approved') {
+                    $isMember = true;
+                    break;
+                }
+            }
+
+            if (!$isMember) {
+                return back()->withErrors(['phone' => 'Nomor ini bukan member terdaftar. Pesan hanya dapat dikirim ke member aktif.']);
+            }
+
             $configResp = $this->api()->get("{$this->apiUrl}/bot-configs");
             $config = $configResp->json('data', []);
 
             $sessionName = $config['waha_session_name'] ?? 'default';
             $apiKey = $config['waha_api_key'] ?? '';
 
-            // Format phone: ensure @c.us suffix
-            $phone = preg_replace('/[^0-9]/', '', $request->phone);
-            if (str_starts_with($phone, '0')) {
-                $phone = '62' . substr($phone, 1);
-            }
             $chatId = $phone . '@c.us';
 
             $wahaResp = $this->waha($apiKey)->post('/api/sendText', [

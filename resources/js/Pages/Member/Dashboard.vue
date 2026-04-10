@@ -73,7 +73,7 @@ const formatDate = (d) => {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
                 <h1 class="text-xl font-bold text-slate-800">Halo, {{ member?.nama_lengkap || 'Member' }} 👋</h1>
-                <p class="text-sm text-slate-400 mt-0.5">{{ formattedDate }} — {{ formattedTime }}</p>
+                <p class="text-sm text-slate-400 mt-0.5">{{ formattedDate }}</p>
             </div>
             <button @click="refreshDashboard" :disabled="isRefreshing"
                 class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-sm font-semibold text-slate-600 rounded-xl transition-colors">

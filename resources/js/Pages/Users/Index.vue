@@ -14,6 +14,7 @@ const props = defineProps({
     users: Object,
     filters: { type: Object, default: () => ({}) },
     error: { type: String, default: null },
+    currentUser: Object,
 })
 
 // Panel state
@@ -213,7 +214,12 @@ const doDelete = () => {
                                 <button @click="openEdit(u)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
                                     <span class="material-symbols-rounded text-[18px]">edit</span>
                                 </button>
-                                <button @click="confirmDelete(u.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Hapus">
+                                <button 
+                                    v-if="u.id !== currentUser?.id"
+                                    @click="confirmDelete(u.id)" 
+                                    class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" 
+                                    title="Hapus"
+                                >
                                     <span class="material-symbols-rounded text-[18px]">delete</span>
                                 </button>
                             </div>
@@ -278,7 +284,12 @@ const doDelete = () => {
                         <span class="material-symbols-rounded text-[16px]">edit</span>
                         Edit
                     </button>
-                    <button @click="confirmDelete(u.id)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
+                    <button 
+                        v-if="u.id !== currentUser?.id"
+                        @click="confirmDelete(u.id)" 
+                        class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
+                        title="Hapus"
+                    >
                         <span class="material-symbols-rounded text-[16px]">delete</span>
                         Hapus
                     </button>

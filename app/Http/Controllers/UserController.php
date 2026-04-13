@@ -63,6 +63,7 @@ class UserController extends Controller
             return Inertia::render('Users/Index', [
                 'users' => $response->json(),
                 'filters' => $request->only(['search', 'role', 'is_active']),
+                'currentUser' => session('user'),
             ]);
         } catch (\Exception $e) {
             Log::error('Users index error: ' . $e->getMessage());

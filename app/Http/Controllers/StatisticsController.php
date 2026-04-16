@@ -46,6 +46,10 @@ class StatisticsController extends Controller
                 return redirect()->route('login')->with('error', 'Sesi Anda telah berakhir.');
             }
 
+            if (!$responses['stats']->successful()) {
+                throw new \Exception('API Error ' . $responses['stats']->status() . ': ' . substr($responses['stats']->body(), 0, 100));
+            }
+
             $statsData = $responses['stats']->json();
             $offices   = $responses['offices']->json()['data'] ?? [];
 

@@ -38,14 +38,15 @@ onMounted(() => {
 
 // Navigation items
 const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: 'grid_view', match: '/dashboard' },
-    { name: 'Absensi', href: '/attendances', icon: 'fact_check', match: '/attendances' },
-    { name: 'Laporan', href: '/attendances/report', icon: 'assessment', match: '/attendances/report' },
-    { name: 'Members', href: '/members', icon: 'group', match: '/members' },
-    { name: 'Progress', href: '/progresses', icon: 'trending_up', match: '/progresses' },
-    { name: 'Kantor', href: '/offices', icon: 'apartment', match: '/offices' },
-    { name: 'Users', href: '/users', icon: 'manage_accounts', match: '/users' },
-    { name: 'Bot WA', href: '/bot/config', icon: 'smart_toy', match: '/bot' },
+    { name: 'Dashboard',  href: '/dashboard',          icon: 'grid_view',       match: '/dashboard' },
+    { name: 'Absensi',    href: '/attendances',         icon: 'fact_check',      match: '/attendances' },
+    { name: 'Laporan',    href: '/attendances/report',  icon: 'assessment',      match: '/attendances/report' },
+    { name: 'Statistik',  href: '/statistics',          icon: 'bar_chart',       match: '/statistics' },
+    { name: 'Members',    href: '/members',             icon: 'group',           match: '/members' },
+    { name: 'Progress',   href: '/progresses',          icon: 'trending_up',     match: '/progresses' },
+    { name: 'Kantor',     href: '/offices',             icon: 'apartment',       match: '/offices' },
+    { name: 'Users',      href: '/users',               icon: 'manage_accounts', match: '/users' },
+    { name: 'Bot WA',     href: '/bot/config',          icon: 'smart_toy',       match: '/bot' },
 ]
 
 const currentPath = computed(() => page.url.split('?')[0])

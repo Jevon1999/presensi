@@ -12,6 +12,7 @@ use App\Http\Controllers\BotController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MemberApplyController;
 use App\Http\Controllers\MemberDashboardController;
+use App\Http\Controllers\StatisticsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -80,6 +81,9 @@ Route::middleware(['web'])->group(function () {
             Route::get('/{id}', [AttendanceController::class, 'show'])->name('show');
             Route::post('/{id}/reset', [AttendanceController::class, 'reset'])->name('reset');
         });
+
+        // Statistics
+        Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics');
 
         // Progresses CRUD
         Route::prefix('progresses')->name('progresses.')->group(function () {

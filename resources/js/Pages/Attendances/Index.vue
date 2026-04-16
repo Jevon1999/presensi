@@ -103,8 +103,8 @@ const formatTime = (t) => t || '-'
 const summaryCards = computed(() => [
     { label: 'Total',  value: props.summary?.total || 0, icon: 'groups',         color: 'bg-slate-100 text-slate-600' },
     { label: 'Hadir',  value: props.summary?.hadir || 0, icon: 'check_circle',   color: 'bg-emerald-50 text-emerald-600' },
-    { label: 'WFO',    value: props.summary?.wfo   || 0, icon: 'business',       color: 'bg-blue-50 text-blue-600' },
-    { label: 'WFA',    value: props.summary?.wfa   || 0, icon: 'home_work',      color: 'bg-violet-50 text-violet-600' },
+    // { label: 'WFO',    value: props.summary?.wfo   || 0, icon: 'business',       color: 'bg-blue-50 text-blue-600' },
+    // { label: 'WFA',    value: props.summary?.wfa   || 0, icon: 'home_work',      color: 'bg-violet-50 text-violet-600' },
     { label: 'Izin',   value: props.summary?.izin  || 0, icon: 'event_busy',     color: 'bg-sky-50 text-sky-600' },
     { label: 'Sakit',  value: props.summary?.sakit || 0, icon: 'local_hospital', color: 'bg-orange-50 text-orange-600' },
     { label: 'Alpha',  value: props.summary?.alpha || 0, icon: 'cancel',         color: 'bg-red-50 text-red-600' },
@@ -122,7 +122,7 @@ const summaryCards = computed(() => [
         </div>
 
         <!-- Summary Cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-7 gap-3 mb-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 lg-grid-cols-5 gap-4 mb-5">
             <div v-for="s in summaryCards" :key="s.label" class="bg-white rounded-2xl border border-slate-200 p-3.5">
                 <div class="flex items-center gap-2.5">
                     <div :class="s.color" class="w-9 h-9 rounded-xl flex items-center justify-center">
@@ -227,12 +227,24 @@ const summaryCards = computed(() => [
                         </td>
                         <td class="px-4 py-3 text-right">
                             <div class="flex items-center justify-end gap-1">
-                                <button @click="openDetail(a)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Detail">
+                                <!-- Tombol lihat detail absensi -->
+                                <button
+                                    @click="openDetail(a)"
+                                    class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
+                                    title="Lihat detail absensi"
+                                >
                                     <span class="material-symbols-rounded text-[18px]">visibility</span>
+                                    <span class="text-[9px] font-semibold uppercase tracking-wide">Detail</span>
                                 </button>
-                                <button @click="openReset(a)" class="p-1.5 rounded-lg hover:bg-amber-50 text-slate-400 hover:text-amber-600 transition-colors" title="Reset">
+                                <!-- Tombol reset / koreksi data absensi
+                                <button
+                                    @click="openReset(a)"
+                                    class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-amber-50 text-slate-400 hover:text-amber-600 transition-colors"
+                                    title="Reset / koreksi data absensi ini"
+                                >
                                     <span class="material-symbols-rounded text-[18px]">restart_alt</span>
-                                </button>
+                                    <span class="text-[9px] font-semibold uppercase tracking-wide">Reset</span>
+                                </button> -->
                             </div>
                         </td>
                     </tr>

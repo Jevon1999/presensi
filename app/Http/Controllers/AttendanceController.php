@@ -56,7 +56,9 @@ class AttendanceController extends Controller
             $allData = $attendancesData['data'] ?? [];
             $summary = [
                 'hadir' => count(array_filter($allData, fn($a) => $a['status'] === 'hadir')),
-                'izin' => count(array_filter($allData, fn($a) => $a['status'] === 'izin')),
+                'wfo'   => count(array_filter($allData, fn($a) => ($a['work_type'] ?? null) === 'wfo')),
+                'wfa'   => count(array_filter($allData, fn($a) => ($a['work_type'] ?? null) === 'wfa')),
+                'izin'  => count(array_filter($allData, fn($a) => $a['status'] === 'izin')),
                 'sakit' => count(array_filter($allData, fn($a) => $a['status'] === 'sakit')),
                 'alpha' => count(array_filter($allData, fn($a) => $a['status'] === 'alpha')),
                 'total' => count($allData),
@@ -75,7 +77,7 @@ class AttendanceController extends Controller
                 'attendances' => ['data' => [], 'current_page' => 1, 'last_page' => 1, 'total' => 0, 'from' => 0, 'to' => 0, 'links' => []],
                 'offices' => [],
                 'members' => [],
-                'summary' => ['hadir' => 0, 'izin' => 0, 'sakit' => 0, 'alpha' => 0, 'total' => 0],
+                'summary' => ['hadir' => 0, 'wfo' => 0, 'wfa' => 0, 'izin' => 0, 'sakit' => 0, 'alpha' => 0, 'total' => 0],
                 'filters' => $request->only(['date', 'member_id', 'status', 'office_id']),
                 'error' => 'Gagal memuat data: ' . $e->getMessage(),
             ]);
@@ -199,7 +201,7 @@ class AttendanceController extends Controller
                 fputcsv($file, []);
 
                 // Header
-                fputcsv($file, ['No', 'Tanggal', 'Nama', 'Kantor', 'Check In', 'Check Out', 'Status']);
+                fputcsv($file, ['No', 'Tanggal', 'Nama', 'Kantor', 'Check In', 'Check Out', 'Status', 'Kehadiran']);
 
                 $no = 1;
                 foreach ($attendances as $att) {
@@ -211,6 +213,7 @@ class AttendanceController extends Controller
                         $att['check_in_time'] ?? '-',
                         $att['check_out_time'] ?? '-',
                         $att['status'] ?? '-',
+                        isset($att['work_type']) ? strtoupper($att['work_type']) : '-',
                     ]);
                 }
 

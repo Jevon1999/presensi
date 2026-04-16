@@ -48,6 +48,18 @@ const formatTime = (t) => t || '-'
                 <span class="text-xs text-slate-500">Check Out</span>
                 <span class="text-sm font-medium text-slate-700">{{ formatTime(attendance.check_out_time) }}</span>
             </div>
+            <div v-if="attendance.work_type" class="flex justify-between items-center">
+                <span class="text-xs text-slate-500">Tipe Kehadiran</span>
+                <span
+                    :class="attendance.work_type === 'wfo'
+                        ? 'bg-blue-50 text-blue-600'
+                        : 'bg-violet-50 text-violet-600'"
+                    class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full uppercase"
+                >
+                    <span class="material-symbols-rounded text-[13px]">{{ attendance.work_type === 'wfo' ? 'business' : 'home_work' }}</span>
+                    {{ attendance.work_type.toUpperCase() }}
+                </span>
+            </div>
         </div>
 
         <!-- Permissions -->

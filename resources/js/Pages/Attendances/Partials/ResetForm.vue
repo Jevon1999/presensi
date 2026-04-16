@@ -12,6 +12,7 @@ const form = useForm({
     reason: '',
     reset_check_in: true,
     reset_check_out: true,
+    work_type: '',
 })
 
 const submit = () => {
@@ -47,6 +48,18 @@ const submit = () => {
                 <input type="checkbox" v-model="form.reset_check_out" class="checkbox checkbox-sm checkbox-primary" />
                 <span class="text-sm">Reset Check-Out</span>
             </label>
+        </div>
+
+        <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">Tipe Kehadiran</label>
+            <select
+                v-model="form.work_type"
+                class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+            >
+                <option value="">— Tidak diubah —</option>
+                <option value="wfo">WFO (Work From Office)</option>
+                <option value="wfa">WFA (Work From Anywhere)</option>
+            </select>
         </div>
 
         <div class="pt-2">

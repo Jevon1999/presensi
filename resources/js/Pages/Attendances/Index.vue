@@ -39,12 +39,14 @@ const formatYMD = (d) => {
 const dateFilter = ref(props.filters.date || formatYMD(new Date()))
 const officeFilter = ref(props.filters.office_id || '')
 const statusFilter = ref(props.filters.status || '')
+const workTypeFilter = ref(props.filters.work_type || '')
 
 const applyFilters = () => {
     router.get('/attendances', {
         date: dateFilter.value || undefined,
         office_id: officeFilter.value || undefined,
         status: statusFilter.value || undefined,
+        work_type: workTypeFilter.value || undefined,
     }, { preserveState: true, preserveScroll: true })
 }
 
@@ -52,6 +54,7 @@ const clearFilters = () => {
     dateFilter.value = formatYMD(new Date())
     officeFilter.value = ''
     statusFilter.value = ''
+    workTypeFilter.value = ''
     router.get('/attendances', { date: dateFilter.value }, { preserveState: true })
 }
 
@@ -98,11 +101,13 @@ const pagination = computed(() => ({
 const formatTime = (t) => t || '-'
 
 const summaryCards = computed(() => [
-    { label: 'Total', value: props.summary?.total || 0, icon: 'groups', color: 'bg-slate-100 text-slate-600' },
-    { label: 'Hadir', value: props.summary?.hadir || 0, icon: 'check_circle', color: 'bg-emerald-50 text-emerald-600' },
-    { label: 'Izin', value: props.summary?.izin || 0, icon: 'event_busy', color: 'bg-blue-50 text-blue-600' },
-    { label: 'Sakit', value: props.summary?.sakit || 0, icon: 'local_hospital', color: 'bg-orange-50 text-orange-600' },
-    { label: 'Alpha', value: props.summary?.alpha || 0, icon: 'cancel', color: 'bg-red-50 text-red-600' },
+    { label: 'Total',  value: props.summary?.total || 0, icon: 'groups',         color: 'bg-slate-100 text-slate-600' },
+    { label: 'Hadir',  value: props.summary?.hadir || 0, icon: 'check_circle',   color: 'bg-emerald-50 text-emerald-600' },
+    { label: 'WFO',    value: props.summary?.wfo   || 0, icon: 'business',       color: 'bg-blue-50 text-blue-600' },
+    { label: 'WFA',    value: props.summary?.wfa   || 0, icon: 'home_work',      color: 'bg-violet-50 text-violet-600' },
+    { label: 'Izin',   value: props.summary?.izin  || 0, icon: 'event_busy',     color: 'bg-sky-50 text-sky-600' },
+    { label: 'Sakit',  value: props.summary?.sakit || 0, icon: 'local_hospital', color: 'bg-orange-50 text-orange-600' },
+    { label: 'Alpha',  value: props.summary?.alpha || 0, icon: 'cancel',         color: 'bg-red-50 text-red-600' },
 ])
 </script>
 
@@ -117,7 +122,7 @@ const summaryCards = computed(() => [
         </div>
 
         <!-- Summary Cards -->
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
+        <div class="grid grid-cols-2 sm:grid-cols-7 gap-3 mb-4">
             <div v-for="s in summaryCards" :key="s.label" class="bg-white rounded-2xl border border-slate-200 p-3.5">
                 <div class="flex items-center gap-2.5">
                     <div :class="s.color" class="w-9 h-9 rounded-xl flex items-center justify-center">
@@ -159,6 +164,15 @@ const summaryCards = computed(() => [
                     <option value="sakit">Sakit</option>
                     <option value="alpha">Alpha</option>
                 </select>
+                <select
+                    v-model="workTypeFilter"
+                    @change="applyFilters"
+                    class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white min-w-[120px]"
+                >
+                    <option value="">Semua Kehadiran</option>
+                    <option value="wfo">WFO</option>
+                    <option value="wfa">WFA</option>
+                </select>
                 <button
                     @click="clearFilters"
                     class="px-3.5 py-2.5 text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-colors border border-slate-200"
@@ -178,6 +192,7 @@ const summaryCards = computed(() => [
                         <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Check In</th>
                         <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Check Out</th>
                         <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Status</th>
+                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kehadiran</th>
                         <th class="text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Aksi</th>
                     </tr>
                 </thead>
@@ -198,6 +213,18 @@ const summaryCards = computed(() => [
                         <td class="px-4 py-3 text-sm text-center text-slate-600">{{ formatTime(a.check_in_time) }}</td>
                         <td class="px-4 py-3 text-sm text-center text-slate-600">{{ formatTime(a.check_out_time) }}</td>
                         <td class="px-4 py-3 text-center"><Badge :status="a.status" type="attendance" /></td>
+                        <td class="px-4 py-3 text-center">
+                            <span v-if="a.work_type"
+                                :class="a.work_type === 'wfo'
+                                    ? 'bg-blue-50 text-blue-600'
+                                    : 'bg-violet-50 text-violet-600'"
+                                class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full uppercase"
+                            >
+                                <span class="material-symbols-rounded text-[12px]">{{ a.work_type === 'wfo' ? 'business' : 'home_work' }}</span>
+                                {{ a.work_type.toUpperCase() }}
+                            </span>
+                            <span v-else class="text-slate-300 text-xs">-</span>
+                        </td>
                         <td class="px-4 py-3 text-right">
                             <div class="flex items-center justify-end gap-1">
                                 <button @click="openDetail(a)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Detail">
@@ -235,6 +262,15 @@ const summaryCards = computed(() => [
                         </div>
                     </div>
                     <Badge :status="a.status" type="attendance" />
+                        <span v-if="a.work_type"
+                            :class="a.work_type === 'wfo'
+                                ? 'bg-blue-50 text-blue-600'
+                                : 'bg-violet-50 text-violet-600'"
+                            class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full uppercase"
+                        >
+                            <span class="material-symbols-rounded text-[12px]">{{ a.work_type === 'wfo' ? 'business' : 'home_work' }}</span>
+                            {{ a.work_type.toUpperCase() }}
+                        </span>
                 </div>
                 <div class="grid grid-cols-2 gap-3 mb-3">
                     <div class="bg-slate-50 rounded-xl p-2.5 text-center">

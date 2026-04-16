@@ -90,7 +90,7 @@ const formatTime = (t) => t || '-'
 <template>
     <div @click="showMemberDropdown = false">
         <!-- Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 print:hidden">
             <div>
                 <div class="flex items-center gap-2 mb-1">
                     <a href="/attendances" class="text-slate-400 hover:text-slate-600 transition-colors">
@@ -100,17 +100,26 @@ const formatTime = (t) => t || '-'
                 </div>
                 <p class="text-sm text-slate-400">Rekap kehadiran anggota berdasarkan periode</p>
             </div>
-            <button
-                @click="exportCsv"
-                class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
-            >
-                <span class="material-symbols-rounded text-[18px]">download</span>
-                Export CSV
-            </button>
+            <div class="flex gap-2">
+                <button
+                    @click="exportCsv"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
+                >
+                    <span class="material-symbols-rounded text-[18px]">download</span>
+                    Export CSV
+                </button>
+                <button
+                    onclick="window.print()"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
+                >
+                    <span class="material-symbols-rounded text-[18px]">print</span>
+                    Cetak / PDF
+                </button>
+            </div>
         </div>
 
         <!-- Filters -->
-        <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 mb-4 print:hidden">
             <div class="flex flex-col gap-3">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
@@ -183,7 +192,7 @@ const formatTime = (t) => t || '-'
         </div>
 
         <!-- Stats -->
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4 print:hidden">
             <div v-for="s in statsCards" :key="s.label" class="bg-white rounded-2xl border border-slate-200 p-3.5">
                 <div class="flex items-center gap-2.5">
                     <div :class="s.color" class="w-9 h-9 rounded-xl flex items-center justify-center">
@@ -197,37 +206,64 @@ const formatTime = (t) => t || '-'
             </div>
         </div>
 
-        <!-- Table (Desktop) -->
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hidden lg:block">
-            <table v-if="attendances.length" class="w-full">
+        <!-- Print Formal Header (Hidden on Screen) -->
+        <div class="hidden print:block mb-6 text-center text-slate-800 font-serif">
+            <h1 class="text-xl font-black uppercase">PT. Global Intermedia Lintas Batas</h1>
+            <h2 class="text-lg font-bold uppercase mt-1">Laporan Rekapitulasi Absensi Peserta Magang</h2>
+            <div class="mt-4 text-sm font-semibold border-b-2 border-slate-800 pb-2 inline-block">
+                Periode: {{ formatDate(startDate) }} s/d {{ formatDate(endDate) }}
+            </div>
+            <div class="mt-1 text-[10px] text-slate-500">
+                Dicetak pada: {{ new Date().toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit'}) }} WIB
+            </div>
+        </div>
+
+        <!-- Table (Desktop & Print) -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hidden lg:block print:block print:border-none print:shadow-none">
+            <table v-if="attendances.length" class="w-full text-left border-collapse print:text-[10px]">
                 <thead>
-                    <tr class="border-b border-slate-100">
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">No</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Tanggal</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Nama</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kantor</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Check In</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Check Out</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Status</th>
+                    <tr class="border-b border-slate-100 print:border-slate-800 print:border-b-2">
+                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-3 py-2.5 print:p-1.5 w-10">No</th>
+                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-3 py-2.5 print:p-1.5 w-24">Tanggal</th>
+                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-3 py-2.5 print:p-1.5">Identitas Pegawai</th>
+                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-3 py-2.5 print:p-1.5">Penempatan</th>
+                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-3 py-2.5 print:p-1.5">Rincian Kehadiran</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(a, i) in attendances" :key="a.id || i" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                        <td class="px-4 py-3 text-sm text-slate-500">{{ i + 1 }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ formatDate(a.tanggal) }}</td>
-                        <td class="px-4 py-3 text-sm font-medium text-slate-700">{{ a.member?.nama_lengkap || '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ a.member?.office?.name || '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-center text-slate-600">{{ formatTime(a.check_in_time) }}</td>
-                        <td class="px-4 py-3 text-sm text-center text-slate-600">{{ formatTime(a.check_out_time) }}</td>
-                        <td class="px-4 py-3 text-center"><Badge :status="a.status" type="attendance" /></td>
+                    <tr v-for="(a, i) in attendances" :key="a.id || i" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors print:border-slate-300">
+                        <td class="px-3 py-2 print:p-1.5 text-sm print:text-[10px] text-slate-500">{{ i + 1 }}</td>
+                        <td class="px-3 py-2 print:p-1.5 text-sm print:text-[10px] font-medium text-slate-700 whitespace-nowrap">{{ formatDate(a.tanggal) }}</td>
+                        <td class="px-3 py-2 print:p-1.5 align-top">
+                            <p class="text-sm print:text-[10px] font-bold text-slate-800">{{ a.member?.nama_lengkap || '-' }}</p>
+                            <p class="text-[11px] print:text-[9px] text-slate-500 truncate max-w-[200px] print:max-w-none">{{ a.member?.asal_sekolah || '-' }} • {{ a.member?.jurusan || '-' }}</p>
+                        </td>
+                        <td class="px-3 py-2 print:p-1.5 text-sm print:text-[10px] text-slate-600 align-top pt-2.5">{{ a.member?.office?.name || '-' }}</td>
+                        <td class="px-3 py-2 print:p-1.5 align-top">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="font-bold uppercase text-[11px] print:text-[10px]" :class="{
+                                    'text-emerald-600': a.status === 'hadir',
+                                    'text-red-500': a.status === 'alpha',
+                                    'text-blue-500': a.status === 'izin',
+                                    'text-orange-500': a.status === 'sakit'
+                                }">{{ a.status }}</span>
+                                <span v-if="a.status === 'hadir' && a.work_type" class="px-1.5 rounded bg-slate-100 text-slate-500 text-[10px] print:text-[8px] font-bold uppercase">{{ a.work_type }}</span>
+                                <span v-if="a.is_late" class="px-1.5 rounded bg-red-50 text-red-600 text-[10px] print:text-[8px] font-bold uppercase">Terlambat</span>
+                            </div>
+                            <div v-if="a.status === 'hadir'" class="text-[11px] print:text-[9px] text-slate-500 flex items-center gap-1.5">
+                                <span class="material-symbols-rounded text-[12px] print:hidden">login</span> In: <strong class="text-slate-700">{{ formatTime(a.check_in_time) }}</strong>
+                                <span class="text-slate-300">|</span>
+                                <span class="material-symbols-rounded text-[12px] print:hidden">logout</span> Out: <strong class="text-slate-700">{{ formatTime(a.check_out_time) }}</strong>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
             <EmptyState v-else icon="assessment" title="Tidak ada data" description="Pilih filter dan klik Tampilkan untuk melihat laporan." />
         </div>
 
-        <!-- Cards (Mobile) -->
-        <div class="lg:hidden space-y-3">
+        <!-- Cards (Mobile, hidden on print) -->
+        <div class="lg:hidden print:hidden space-y-3">
             <div
                 v-for="(a, i) in attendances"
                 :key="'rcard-' + (a.id || i)"

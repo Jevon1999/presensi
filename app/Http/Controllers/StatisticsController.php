@@ -35,9 +35,9 @@ class StatisticsController extends Controller
             }
 
             $responses = Http::pool(fn ($pool) => [
-                $pool->as('stats')->withToken($this->token())->timeout(20)
+                $pool->as('stats')->withToken($this->token())->acceptJson()->timeout(20)
                     ->get("{$this->apiUrl}/statistics", $params),
-                $pool->as('offices')->withToken($this->token())->timeout(15)
+                $pool->as('offices')->withToken($this->token())->acceptJson()->timeout(15)
                     ->get("{$this->apiUrl}/offices"),
             ]);
 
@@ -47,7 +47,9 @@ class StatisticsController extends Controller
             }
 
             if (!$responses['stats']->successful()) {
-                throw new \Exception('API Error ' . $responses['stats']->status() . ': ' . substr($responses['stats']->body(), 0, 100));
+                $errBody = $responses['stats']->json();
+                $errMsg = $errBody['message'] ?? substr($responses['stats']->body(), 0, 150);
+                throw new \Exception('API Error ' . $responses['stats']->status() . ': ' . $errMsg);
             }
 
             $statsData = $responses['stats']->json();

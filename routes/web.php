@@ -79,6 +79,7 @@ Route::middleware(['web'])->group(function () {
             Route::get('/', [AttendanceController::class, 'index'])->name('index');
             Route::get('/report', [AttendanceController::class, 'report'])->name('report');
             Route::get('/export', [AttendanceController::class, 'exportReport'])->name('export');
+            Route::get('/export/pdf', [AttendanceController::class, 'exportPdf'])->name('export.pdf');
             Route::get('/{id}', [AttendanceController::class, 'show'])->name('show');
             Route::post('/{id}/reset', [AttendanceController::class, 'reset'])->name('reset');
         });

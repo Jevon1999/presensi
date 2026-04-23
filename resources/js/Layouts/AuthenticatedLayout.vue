@@ -87,7 +87,7 @@ const logout = () => {
 </script>
 
 <template>
-    <div class="flex h-dvh overflow-hidden" @click="closeUserMenu">
+    <div class="flex h-dvh overflow-hidden print:!h-auto print:!overflow-visible print:!block" @click="closeUserMenu">
         <!-- Mobile Overlay -->
         <Transition
             enter-active-class="transition-opacity duration-300"
@@ -110,7 +110,7 @@ const logout = () => {
                 sidebarOpen ? 'translate-x-0' : '-translate-x-full',
                 'lg:translate-x-0'
             ]"
-            class="fixed lg:static inset-y-0 left-0 w-70 lg:w-64 shrink-0 border-r border-slate-200 bg-white flex flex-col z-50 transition-transform duration-300 ease-in-out"
+            class="fixed lg:static inset-y-0 left-0 w-70 lg:w-64 shrink-0 border-r border-slate-200 bg-white flex flex-col z-50 transition-transform duration-300 ease-in-out print:!hidden"
         >
             <!-- Brand -->
             <div class="p-5 flex items-center gap-3 border-b border-slate-100">
@@ -196,9 +196,9 @@ const logout = () => {
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col overflow-hidden">
+        <main class="flex-1 flex flex-col overflow-hidden print:!overflow-visible print:!h-auto print:!block">
             <!-- Top Bar (Mobile) -->
-            <header class="lg:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200 sticky top-0 z-30">
+            <header class="lg:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200 sticky top-0 z-30 print:!hidden">
                 <button @click="sidebarOpen = true" class="p-2 -ml-2 rounded-xl hover:bg-slate-100 transition-colors">
                     <span class="material-symbols-rounded text-slate-600">menu</span>
                 </button>
@@ -212,7 +212,7 @@ const logout = () => {
             </header>
 
             <!-- Page Content (scrollable) -->
-            <div class="flex-1 overflow-y-auto">
+            <div class="flex-1 overflow-y-auto print:!overflow-visible print:!h-auto">
                 <!-- Flash Toasts -->
                 <div class="mx-4 lg:mx-6 mt-4 space-y-2">
                     <Toast

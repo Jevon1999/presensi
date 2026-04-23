@@ -30,8 +30,9 @@ const deleteProcessing = ref(false)
 
 // Filters
 const memberFilter = ref(props.filters.member_id || '')
-const startDate = ref(props.filters.start_date || '')
-const endDate = ref(props.filters.end_date || '')
+const tipeFilter   = ref(props.filters.tipe || '')
+const startDate    = ref(props.filters.start_date || '')
+const endDate      = ref(props.filters.end_date || '')
 
 // Searchable member
 const memberSearch = ref('')
@@ -62,6 +63,7 @@ const clearMember = () => {
 const applyFilters = () => {
     router.get('/progresses', {
         member_id: memberFilter.value || undefined,
+        tipe: tipeFilter.value || undefined,
         start_date: startDate.value || undefined,
         end_date: endDate.value || undefined,
     }, { preserveState: true, preserveScroll: true })
@@ -70,12 +72,13 @@ const applyFilters = () => {
 const clearFilters = () => {
     memberFilter.value = ''
     memberSearch.value = ''
-    startDate.value = ''
-    endDate.value = ''
+    tipeFilter.value   = ''
+    startDate.value    = ''
+    endDate.value      = ''
     router.get('/progresses', {}, { preserveState: true })
 }
 
-const hasFilters = computed(() => memberFilter.value || startDate.value || endDate.value)
+const hasFilters = computed(() => memberFilter.value || tipeFilter.value || startDate.value || endDate.value)
 
 // CRUD
 const openCreate = () => {
@@ -199,7 +202,16 @@ const truncate = (str, len = 80) => {
                         </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
+                    <select
+                        v-model="tipeFilter"
+                        class="px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none transition-all cursor-pointer min-w-[120px]"
+                    >
+                        <option value="">Semua Tipe</option>
+                        <option value="hadir">Hadir</option>
+                        <option value="sakit">Sakit</option>
+                        <option value="izin">Izin</option>
+                    </select>
                     <flat-pickr
                         v-model="startDate"
                         :config="{ altInput: true, altFormat: 'd/m/Y', dateFormat: 'Y-m-d', disableMobile: true }"
@@ -239,6 +251,7 @@ const truncate = (str, len = 80) => {
                             <th class="sticky left-0 z-20 bg-white text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[1px_0_0_0_#f1f5f9] whitespace-nowrap">Tanggal</th>
                             <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Nama</th>
                             <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kantor</th>
+                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Tipe</th>
                             <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Deskripsi</th>
                             <th class="sticky right-0 z-20 bg-white text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[-1px_0_0_0_#f1f5f9]">Aksi</th>
                         </tr>
@@ -250,6 +263,17 @@ const truncate = (str, len = 80) => {
                                 <p class="text-sm font-semibold text-slate-700 whitespace-nowrap">{{ p.member?.nama_lengkap || '-' }}</p>
                             </td>
                             <td class="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">{{ p.member?.office?.name || '-' }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span v-if="p.tipe === 'sakit'" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[11px] font-bold border border-red-100">
+                                    <span class="material-symbols-rounded text-[14px]">medical_services</span> Sakit
+                                </span>
+                                <span v-else-if="p.tipe === 'izin'" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-600 text-[11px] font-bold border border-amber-100">
+                                    <span class="material-symbols-rounded text-[14px]">assignment_late</span> Izin
+                                </span>
+                                <span v-else class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 text-blue-600 text-[11px] font-bold border border-blue-100">
+                                    <span class="material-symbols-rounded text-[14px]">work</span> Hadir
+                                </span>
+                            </td>
                             <td class="px-4 py-3 text-sm text-slate-600 max-w-sm">{{ truncate(p.description) }}</td>
                             <td class="sticky right-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 text-right shadow-[-1px_0_0_0_#f1f5f9]">
                                 <div class="flex items-center justify-end gap-1">
@@ -284,6 +308,9 @@ const truncate = (str, len = 80) => {
                         <p class="font-semibold text-sm text-slate-800">{{ p.member?.nama_lengkap || '-' }}</p>
                         <p class="text-xs text-slate-400">{{ p.member?.office?.name || '-' }} &middot; {{ formatDate(p.tanggal) }}</p>
                     </div>
+                    <span v-if="p.tipe === 'sakit'" class="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[10px] font-bold border border-red-100 flex items-center gap-1">Sakit</span>
+                    <span v-else-if="p.tipe === 'izin'" class="px-2 py-1 rounded-lg bg-amber-50 text-amber-600 text-[10px] font-bold border border-amber-100 flex items-center gap-1">Izin</span>
+                    <span v-else class="px-2 py-1 rounded-lg bg-blue-50 text-blue-600 text-[10px] font-bold border border-blue-100 flex items-center gap-1">Hadir</span>
                 </div>
                 <p class="text-sm text-slate-600 mb-3 leading-relaxed">{{ truncate(p.description, 120) }}</p>
                 <div class="flex gap-2 pt-2 border-t border-slate-100">

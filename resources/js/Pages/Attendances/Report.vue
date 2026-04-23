@@ -28,6 +28,7 @@ const startDate = ref(props.filters.start_date || formatYMD(new Date(new Date().
 const endDate = ref(props.filters.end_date || formatYMD(new Date()))
 const officeFilter = ref(props.filters.office_id || '')
 const memberFilter = ref(props.filters.member_id || '')
+const statusFilter = ref(props.filters.status || '')
 
 // Searchable member logic
 const memberSearch = ref('')
@@ -57,6 +58,7 @@ const applyFilters = () => {
         end_date: endDate.value || undefined,
         office_id: officeFilter.value || undefined,
         member_id: memberFilter.value || undefined,
+        status: statusFilter.value || undefined,
     }, { preserveState: true, preserveScroll: true })
 }
 
@@ -66,7 +68,18 @@ const exportCsv = () => {
     if (endDate.value) params.set('end_date', endDate.value)
     if (officeFilter.value) params.set('office_id', officeFilter.value)
     if (memberFilter.value) params.set('member_id', memberFilter.value)
+    if (statusFilter.value) params.set('status', statusFilter.value)
     window.open(`/attendances/export?${params.toString()}`, '_blank')
+}
+
+const exportPdf = () => {
+    const params = new URLSearchParams()
+    if (startDate.value) params.set('start_date', startDate.value)
+    if (endDate.value) params.set('end_date', endDate.value)
+    if (officeFilter.value) params.set('office_id', officeFilter.value)
+    if (memberFilter.value) params.set('member_id', memberFilter.value)
+    if (statusFilter.value) params.set('status', statusFilter.value)
+    window.open(`/attendances/export/pdf?${params.toString()}`, '_blank')
 }
 
 const stats = computed(() => props.report?.statistics || {})
@@ -105,11 +118,11 @@ const formatTime = (t) => t || '-'
                     @click="exportCsv"
                     class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
                 >
-                    <span class="material-symbols-rounded text-[18px]">download</span>
-                    Export CSV
+                    <span class="material-symbols-rounded text-[18px]">table_chart</span>
+                    Export Excel
                 </button>
                 <button
-                    onclick="window.print()"
+                    @click="exportPdf"
                     class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
                 >
                     <span class="material-symbols-rounded text-[18px]">print</span>
@@ -143,12 +156,26 @@ const formatTime = (t) => t || '-'
                     <select
                         v-model="officeFilter"
                         @change="applyFilters"
-                        class="w-full sm:w-auto px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all bg-white sm:min-w-[140px]"
+                        class="w-full sm:w-auto px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all sm:min-w-[140px]"
                     >
                         <option value="">Semua Kantor</option>
                         <option v-for="o in offices" :key="o.id" :value="o.id">{{ o.name }}</option>
                     </select>
+
+                    <select
+                        v-model="statusFilter"
+                        @change="applyFilters"
+                        class="w-full sm:w-auto px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none transition-all sm:min-w-[140px]"
+                    >
+                        <option value="">Semua Status</option>
+                        <option value="hadir">Hadir</option>
+                        <option value="telat">Terlambat</option>
+                        <option value="izin">Izin</option>
+                        <option value="sakit">Sakit</option>
+                        <option value="alpha">Alpha</option>
+                    </select>
                     
+
                     <!-- Searchable Member Select -->
                     <div class="relative w-full sm:w-64">
                         <input
@@ -223,37 +250,55 @@ const formatTime = (t) => t || '-'
             <table v-if="attendances.length" class="w-full text-left border-collapse print:text-[10px]">
                 <thead>
                     <tr class="border-b border-slate-100 print:border-slate-800 print:border-b-2">
-                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-3 py-2.5 print:p-1.5 w-10">No</th>
-                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-3 py-2.5 print:p-1.5 w-24">Tanggal</th>
-                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-3 py-2.5 print:p-1.5">Identitas Pegawai</th>
-                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-3 py-2.5 print:p-1.5">Penempatan</th>
-                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-3 py-2.5 print:p-1.5">Rincian Kehadiran</th>
+                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-2.5 py-2 print:p-1 w-10">No</th>
+                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-2.5 py-2 print:p-1 w-24">Tanggal</th>
+                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-2.5 py-2 print:p-1">Nama</th>
+                        <th class="text-center text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-2.5 py-2 print:p-1">Check In</th>
+                        <th class="text-center text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-2.5 py-2 print:p-1">Check Out</th>
+                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-2.5 py-2 print:p-1">Kantor</th>
+                        <th class="text-center text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-2.5 py-2 print:p-1">Tipe</th>
+                        <th class="text-center text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-2.5 py-2 print:p-1">Telat</th>
+                        <th class="text-[11px] print:text-[10px] font-bold text-slate-400 print:text-slate-800 uppercase tracking-wider px-2.5 py-2 print:p-1">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(a, i) in attendances" :key="a.id || i" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors print:border-slate-300">
-                        <td class="px-3 py-2 print:p-1.5 text-sm print:text-[10px] text-slate-500">{{ i + 1 }}</td>
-                        <td class="px-3 py-2 print:p-1.5 text-sm print:text-[10px] font-medium text-slate-700 whitespace-nowrap">{{ formatDate(a.tanggal) }}</td>
-                        <td class="px-3 py-2 print:p-1.5 align-top">
+                        <td class="px-2.5 py-1.5 print:p-1 text-sm print:text-[10px] text-slate-500">{{ i + 1 }}</td>
+                        <td class="px-2.5 py-1.5 print:p-1 text-sm print:text-[10px] font-medium text-slate-700 whitespace-nowrap">{{ formatDate(a.tanggal) }}</td>
+                        <td class="px-2.5 py-1.5 print:p-1 align-top">
                             <p class="text-sm print:text-[10px] font-bold text-slate-800">{{ a.member?.nama_lengkap || '-' }}</p>
                             <p class="text-[11px] print:text-[9px] text-slate-500 truncate max-w-[200px] print:max-w-none">{{ a.member?.asal_sekolah || '-' }} • {{ a.member?.jurusan || '-' }}</p>
                         </td>
-                        <td class="px-3 py-2 print:p-1.5 text-sm print:text-[10px] text-slate-600 align-top pt-2.5">{{ a.member?.office?.name || '-' }}</td>
-                        <td class="px-3 py-2 print:p-1.5 align-top">
-                            <div class="flex items-center gap-2 mb-0.5">
-                                <span class="font-bold uppercase text-[11px] print:text-[10px]" :class="{
+                        <td class="px-2.5 py-1.5 print:p-1 text-center text-sm print:text-[10px] font-medium text-slate-700 align-top pt-2">{{ formatTime(a.check_in_time) }}</td>
+                        <td class="px-2.5 py-1.5 print:p-1 text-center text-sm print:text-[10px] font-medium text-slate-700 align-top pt-2">{{ formatTime(a.check_out_time) }}</td>
+                        <td class="px-2.5 py-1.5 print:p-1 text-sm print:text-[10px] text-slate-600 align-top pt-2">{{ a.member?.office?.name || '-' }}</td>
+                        <td class="px-2.5 py-1.5 print:p-1 text-center text-sm print:text-[10px] font-semibold text-slate-600 align-top pt-2 uppercase">{{ a.work_type || '-' }}</td>
+                        <td class="px-2.5 py-1.5 print:p-1 text-center text-sm print:text-[10px] font-semibold text-slate-600 align-top pt-2">{{ a.is_late ? 'Ya' : '-' }}</td>
+                        <td class="px-2.5 py-1.5 print:p-1 align-top pt-2">
+                            <div class="flex items-center gap-1.5 relative group w-max">
+                                <span class="font-bold uppercase text-[11px] print:text-[10px] print:!text-slate-800 w-12 inline-block" :class="{
                                     'text-emerald-600': a.status === 'hadir',
                                     'text-red-500': a.status === 'alpha',
                                     'text-blue-500': a.status === 'izin',
                                     'text-orange-500': a.status === 'sakit'
                                 }">{{ a.status }}</span>
-                                <span v-if="a.status === 'hadir' && a.work_type" class="px-1.5 rounded bg-slate-100 text-slate-500 text-[10px] print:text-[8px] font-bold uppercase">{{ a.work_type }}</span>
-                                <span v-if="a.is_late" class="px-1.5 rounded bg-red-50 text-red-600 text-[10px] print:text-[8px] font-bold uppercase">Terlambat</span>
-                            </div>
-                            <div v-if="a.status === 'hadir'" class="text-[11px] print:text-[9px] text-slate-500 flex items-center gap-1.5">
-                                <span class="material-symbols-rounded text-[12px] print:hidden">login</span> In: <strong class="text-slate-700">{{ formatTime(a.check_in_time) }}</strong>
-                                <span class="text-slate-300">|</span>
-                                <span class="material-symbols-rounded text-[12px] print:hidden">logout</span> Out: <strong class="text-slate-700">{{ formatTime(a.check_out_time) }}</strong>
+                                
+                                <!-- Info Icon (tanda seru) -->
+                                <span v-if="a.is_late || a.status === 'sakit' || a.status === 'izin' || a.status === 'alpha'" 
+                                      class="material-symbols-rounded text-[14px] text-amber-500 hover:text-amber-600 cursor-help transition-colors print:!hidden hidden lg:block">info</span>
+
+                                <!-- Tooltip -->
+                                <div v-if="a.is_late || a.status === 'sakit' || a.status === 'izin' || a.status === 'alpha'" 
+                                     class="absolute right-full mr-2 top-1/2 -translate-y-1/2 hidden group-hover:block z-50 w-52 p-3 bg-slate-800 text-white text-[10px] rounded-xl shadow-xl print:!hidden cursor-default">
+                                    <div v-if="a.permissions && a.permissions.length">
+                                        <span class="text-slate-400 font-medium block mb-1">Alasan:</span>
+                                        <p class="text-[10px] text-slate-200 leading-snug">{{ a.permissions[0].keterangan || a.permissions[0].reason || '-' }}</p>
+                                    </div>
+                                    <div v-else-if="a.status !== 'hadir'">
+                                        <span class="text-slate-400 font-medium block mb-1">Alasan:</span>
+                                        <p class="text-[10px] text-slate-200 leading-snug text-red-300 italic">Tanpa Keterangan</p>
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -272,22 +317,40 @@ const formatTime = (t) => t || '-'
                 <div class="flex items-start justify-between mb-2">
                     <div>
                         <p class="font-semibold text-sm text-slate-800">{{ a.member?.nama_lengkap || '-' }}</p>
-                        <p class="text-xs text-slate-400">{{ a.member?.office?.name || '-' }}</p>
+                        <p class="text-[11px] text-slate-500">{{ a.member?.asal_sekolah || '-' }} • {{ a.member?.jurusan || '-' }}</p>
+                        <p class="text-xs text-slate-400 mt-0.5">{{ a.member?.office?.name || '-' }}</p>
                     </div>
-                    <Badge :status="a.status" type="attendance" />
+                    <div class="flex flex-col items-end gap-1.5 mt-0.5">
+                        <span class="font-bold uppercase text-[10px]" :class="{
+                            'text-emerald-600': a.status === 'hadir',
+                            'text-red-500': a.status === 'alpha',
+                            'text-blue-500': a.status === 'izin',
+                            'text-orange-500': a.status === 'sakit'
+                        }">{{ a.status }}</span>
+                        <span v-if="a.is_late" class="px-1.5 py-0.5 rounded bg-red-50 text-red-600 text-[9px] font-bold uppercase">Terlambat</span>
+                    </div>
                 </div>
-                <div class="space-y-1.5 text-xs text-slate-500">
-                    <div class="flex justify-between">
-                        <span>Tanggal</span>
-                        <span class="font-medium text-slate-700">{{ formatDate(a.tanggal) }}</span>
+                <div class="space-y-1.5 text-xs text-slate-500 mt-3">
+                    <div class="flex justify-between items-center bg-slate-50 px-3 py-1.5 rounded-lg">
+                        <span class="font-medium">Tanggal</span>
+                        <span class="font-bold text-slate-700">{{ formatDate(a.tanggal) }}</span>
                     </div>
-                    <div class="flex justify-between">
+                    <div class="flex justify-between items-center px-3 py-1">
                         <span>Check In</span>
                         <span class="font-medium text-slate-700">{{ formatTime(a.check_in_time) }}</span>
                     </div>
-                    <div class="flex justify-between">
+                    <div class="flex justify-between items-center px-3 py-1">
                         <span>Check Out</span>
                         <span class="font-medium text-slate-700">{{ formatTime(a.check_out_time) }}</span>
+                    </div>
+                    
+                    <div v-if="a.permissions && a.permissions.length" class="mt-2 mx-3 pt-2 border-t border-slate-100 flex flex-col gap-0.5">
+                        <span class="text-[10px] font-semibold text-slate-400 uppercase">Alasan {{ a.status }}</span>
+                        <p class="text-xs text-slate-700 leading-snug">{{ a.permissions[0].keterangan || a.permissions[0].reason || '-' }}</p>
+                    </div>
+                    <div v-else-if="a.status !== 'hadir'" class="mt-2 mx-3 pt-2 border-t border-slate-100 flex flex-col gap-0.5">
+                        <span class="text-[10px] font-semibold text-slate-400 uppercase">Keterangan</span>
+                        <p class="text-xs text-red-500 italic">Tanpa Keterangan</p>
                     </div>
                 </div>
             </div>

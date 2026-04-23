@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\AttendancesExport;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class AttendanceController extends Controller
 {
@@ -63,6 +66,18 @@ class AttendanceController extends Controller
                 'alpha' => count(array_filter($allData, fn($a) => $a['status'] === 'alpha')),
                 'total' => count($allData),
             ];
+
+            if (isset($attendancesData['links'])) {
+                foreach ($attendancesData['links'] as &$link) {
+                    if ($link['url']) {
+                        $urlParts = parse_url($link['url']);
+                        parse_str($urlParts['query'] ?? '', $query);
+                        $page = $query['page'] ?? 1;
+                        $frontendParams = array_merge($request->only(['date', 'member_id', 'status', 'office_id']), ['date' => $params['date'], 'page' => $page]);
+                        $link['url'] = route('attendances.index', $frontendParams);
+                    }
+                }
+            }
 
             return Inertia::render('Attendances/Index', [
                 'attendances' => $attendancesData,
@@ -127,7 +142,7 @@ class AttendanceController extends Controller
     public function report(Request $request)
     {
         try {
-            $params = $request->only(['start_date', 'end_date', 'member_id', 'office_id']);
+            $params = $request->only(['start_date', 'end_date', 'member_id', 'office_id', 'status', 'page']);
             if (empty($params['start_date'])) {
                 $params['start_date'] = now()->startOfMonth()->format('Y-m-d');
             }
@@ -149,8 +164,22 @@ class AttendanceController extends Controller
                 return redirect()->route('login')->with('error', 'Sesi Anda telah berakhir.');
             }
 
+            $reportData = $responses['report']->json();
+
+            if (isset($reportData['attendances']['links'])) {
+                foreach ($reportData['attendances']['links'] as &$link) {
+                    if ($link['url']) {
+                        $urlParts = parse_url($link['url']);
+                        parse_str($urlParts['query'] ?? '', $query);
+                        $page = $query['page'] ?? 1;
+                        $frontendParams = array_merge($params, ['page' => $page]);
+                        $link['url'] = route('attendances.report', $frontendParams);
+                    }
+                }
+            }
+
             return Inertia::render('Attendances/Report', [
-                'report' => $responses['report']->json(),
+                'report' => $reportData,
                 'offices' => $responses['offices']->json()['data'] ?? [],
                 'members' => $responses['members']->json()['data'] ?? [],
                 'filters' => $params,
@@ -158,10 +187,10 @@ class AttendanceController extends Controller
         } catch (\Exception $e) {
             Log::error('Attendance report error: ' . $e->getMessage());
             return Inertia::render('Attendances/Report', [
-                'report' => ['period' => [], 'statistics' => [], 'attendances' => []],
+                'report' => ['period' => [], 'statistics' => [], 'attendances' => ['data' => [], 'links' => []]],
                 'offices' => [],
                 'members' => [],
-                'filters' => $request->only(['start_date', 'end_date', 'member_id', 'office_id']),
+                'filters' => $request->only(['start_date', 'end_date', 'member_id', 'office_id', 'status']),
                 'error' => 'Gagal memuat laporan: ' . $e->getMessage(),
             ]);
         }
@@ -170,9 +199,11 @@ class AttendanceController extends Controller
     public function exportReport(Request $request)
     {
         try {
-            $params = $request->only(['start_date', 'end_date', 'member_id', 'office_id']);
+            $params = $request->only(['start_date', 'end_date', 'member_id', 'office_id', 'status']);
             if (empty($params['start_date'])) $params['start_date'] = now()->startOfMonth()->format('Y-m-d');
             if (empty($params['end_date']))   $params['end_date']   = now()->format('Y-m-d');
+            
+            $params['per_page'] = 'all';
 
             $response = $this->api()->get("{$this->apiUrl}/attendances/report", $params);
 
@@ -197,103 +228,41 @@ class AttendanceController extends Controller
             $izinPct   = $total > 0 ? round(($stats['izin']   / $total) * 100, 1) : 0;
             $sakitPct  = $total > 0 ? round(($stats['sakit']  / $total) * 100, 1) : 0;
 
-            $filename = "Laporan_Absensi_{$params['start_date']}_sd_{$params['end_date']}.csv";
+            $filename = "Laporan_Absensi_{$params['start_date']}_sd_{$params['end_date']}.xlsx";
 
-            $headers = [
-                'Content-Type'        => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => "attachment; filename=\"{$filename}\"",
-            ];
-
-            $callback = function () use ($attendances, $stats, $params, $startFmt, $endFmt, $generated, $total, $hadirPct, $alphaPct, $izinPct, $sakitPct) {
-                $file = fopen('php://output', 'w');
-                // BOM agar Excel tidak rusak encoding UTF-8
-                fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-                // ══════════════════════════════════════
-                // HEADER INSTITUSI
-                // ══════════════════════════════════════
-                fputcsv($file, ['PT. GLOBAL INTERMEDIA LINTAS BATAS']);
-                fputcsv($file, ['LAPORAN REKAPITULASI ABSENSI PESERTA MAGANG']);
-                fputcsv($file, ['']);
-
-                // ══════════════════════════════════════
-                // INFO LAPORAN
-                // ══════════════════════════════════════
-                fputcsv($file, ['Periode Laporan', "  {$startFmt}  s/d  {$endFmt}"]);
-                fputcsv($file, ['Dibuat Pada',     "  {$generated}"]);
-                fputcsv($file, ['Total Data',      "  {$total} record absensi"]);
-                fputcsv($file, ['']);
-
-                // ══════════════════════════════════════
-                // RINGKASAN STATISTIK
-                // ══════════════════════════════════════
-                fputcsv($file, ['RINGKASAN KEHADIRAN']);
-                fputcsv($file, ['Status', 'Jumlah', 'Persentase']);
-                fputcsv($file, ['Hadir',  $stats['hadir']  ?? 0, $hadirPct . '%']);
-                fputcsv($file, ['Izin',   $stats['izin']   ?? 0, $izinPct  . '%']);
-                fputcsv($file, ['Sakit',  $stats['sakit']  ?? 0, $sakitPct . '%']);
-                fputcsv($file, ['Alpha',  $stats['alpha']  ?? 0, $alphaPct . '%']);
-                fputcsv($file, ['WFO',    $stats['wfo']    ?? 0, $total > 0 ? round((($stats['wfo'] ?? 0) / $total) * 100, 1) . '%' : '0%']);
-                fputcsv($file, ['WFA',    $stats['wfa']    ?? 0, $total > 0 ? round((($stats['wfa'] ?? 0) / $total) * 100, 1) . '%' : '0%']);
-                fputcsv($file, ['TOTAL',  $total,           '100%']);
-                fputcsv($file, ['']);
-
-                // ══════════════════════════════════════
-                // TABEL DETAIL ABSENSI
-                // ══════════════════════════════════════
-                fputcsv($file, ['DETAIL DATA ABSENSI']);
-                fputcsv($file, [
-                    'No',
-                    'Tanggal',
-                    'Nama Lengkap',
-                    'Asal Sekolah / Kampus',
-                    'Jurusan',
-                    'Kantor',
-                    'Jam Check In',
-                    'Jam Check Out',
-                    'Status Kehadiran',
-                    'Tipe Kehadiran',
-                    'Terlambat',
-                ]);
-
-                $no = 1;
-                foreach ($attendances as $att) {
-                    $member   = $att['member'] ?? [];
-                    $isLate   = ($att['is_late'] ?? false) ? 'Ya' : 'Tidak';
-                    $status   = strtoupper($att['status'] ?? '-');
-                    $workType = isset($att['work_type']) && $att['work_type']
-                                    ? strtoupper($att['work_type'])
-                                    : '-';
-
-                    fputcsv($file, [
-                        $no++,
-                        $att['tanggal'] ?? '-',
-                        $member['nama_lengkap'] ?? $member['name'] ?? '-',
-                        $member['asal_sekolah'] ?? '-',
-                        $member['jurusan'] ?? '-',
-                        $member['office']['name'] ?? '-',
-                        $att['check_in_time']  ?? '-',
-                        $att['check_out_time'] ?? '-',
-                        $status,
-                        $workType,
-                        $isLate,
-                    ]);
-                }
-
-                // ══════════════════════════════════════
-                // FOOTER
-                // ══════════════════════════════════════
-                fputcsv($file, ['']);
-                fputcsv($file, ['--- Akhir Laporan ---']);
-                fputcsv($file, ["Total {$total} record ditampilkan"]);
-
-                fclose($file);
-            };
-
-            return response()->stream($callback, 200, $headers);
+            return Excel::download(new AttendancesExport($attendances, $params, $stats), $filename);
         } catch (\Exception $e) {
             Log::error('Export report error: ' . $e->getMessage());
             return back()->with('error', 'Gagal export: ' . $e->getMessage());
+        }
+    }
+
+    public function exportPdf(Request $request)
+    {
+        try {
+            $params = $request->only(['start_date', 'end_date', 'member_id', 'office_id', 'status']);
+            if (empty($params['start_date'])) $params['start_date'] = now()->startOfMonth()->format('Y-m-d');
+            if (empty($params['end_date']))   $params['end_date']   = now()->format('Y-m-d');
+            
+            $params['per_page'] = 'all';
+
+            $response = $this->api()->get("{$this->apiUrl}/attendances/report", $params);
+
+            if (!$response->successful()) {
+                return back()->with('error', 'Gagal mengexport data.');
+            }
+
+            $data       = $response->json();
+            $attendances = $data['attendances'] ?? [];
+            $stats       = $data['statistics']  ?? [];
+
+            $pdf = Pdf::loadView('reports.attendances_pdf', compact('attendances', 'stats', 'params'));
+            $pdf->setPaper('A4', 'portrait');
+
+            return $pdf->stream("Laporan_Absensi_{$params['start_date']}_sd_{$params['end_date']}.pdf");
+        } catch (\Exception $e) {
+            Log::error('Export PDF error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal export PDF: ' . $e->getMessage());
         }
     }
 }

@@ -116,7 +116,7 @@ const doDelete = () => {
         </div>
 
         <!-- Table (Desktop) -->
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hidden lg:block">
+        <div class="bg-white rounded-2xl border border-slate-200 hidden lg:block">
             <!-- Loading Skeleton -->
             <div v-if="isLoading" class="p-8">
                 <div class="animate-pulse space-y-4">
@@ -129,68 +129,71 @@ const doDelete = () => {
                     </div>
                 </div>
             </div>
-            
-            <table v-else-if="offices.length" class="w-full">
-                <thead>
-                    <tr class="border-b border-slate-100">
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kode</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Nama Kantor</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Anggota</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Lokasi</th>
-                        <th class="text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template v-for="o in offices" :key="o.id">
-                        <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                            <td class="px-4 py-3">
-                                <span class="inline-flex items-center px-2.5 py-1 text-xs font-bold bg-slate-100 text-slate-600 rounded-lg">{{ o.code }}</span>
-                            </td>
-                            <td class="px-4 py-3 text-sm font-semibold text-slate-700">{{ o.name }}</td>
-                            <td class="px-4 py-3 text-sm text-center text-slate-600">{{ o.members_count ?? 0 }}</td>
-                            <td class="px-4 py-3 text-center">
-                                <button
-                                    v-if="o.locations?.length"
-                                    @click="toggleExpand(o.id)"
-                                    class="text-xs text-blue-500 hover:text-blue-600 font-medium"
-                                >
-                                    {{ o.locations.length }} lokasi
-                                    <span class="material-symbols-rounded text-[14px] align-middle">{{ expandedId === o.id ? 'expand_less' : 'expand_more' }}</span>
-                                </button>
-                                <span v-else class="text-xs text-slate-400">-</span>
-                            </td>
-                            <td class="px-4 py-3 text-right">
-                                <div class="flex items-center justify-end gap-1">
-                                    <button @click="openEdit(o)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
-                                        <span class="material-symbols-rounded text-[18px]">edit</span>
-                                    </button>
-                                    <button @click="confirmDelete(o.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Hapus">
-                                        <span class="material-symbols-rounded text-[18px]">delete</span>
-                                    </button>
-                                </div>
-                            </td>
+
+            <div v-else-if="offices.length" class="overflow-auto max-h-[calc(100vh-20rem)]">
+                <table class="w-full min-w-[560px]">
+                    <thead class="sticky top-0 z-10">
+                        <tr class="border-b border-slate-100 bg-white">
+                            <th class="sticky left-0 z-20 bg-white text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[1px_0_0_0_#f1f5f9]">Kode</th>
+                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Nama Kantor</th>
+                            <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Anggota</th>
+                            <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Lokasi</th>
+                            <th class="sticky right-0 z-20 bg-white text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[-1px_0_0_0_#f1f5f9]">Aksi</th>
                         </tr>
-                        <!-- Expanded locations row -->
-                        <tr v-if="expandedId === o.id && o.locations?.length">
-                            <td colspan="5" class="bg-slate-50 px-6 py-3">
-                                <div class="space-y-2">
-                                    <div v-for="loc in o.locations" :key="loc.id" class="flex items-start gap-3 text-xs">
-                                        <span class="material-symbols-rounded text-[14px] mt-0.5" :class="loc.is_active ? 'text-emerald-500' : 'text-slate-300'">
-                                            {{ loc.is_active ? 'location_on' : 'location_off' }}
-                                        </span>
-                                        <div>
-                                            <p class="font-medium text-slate-700">{{ loc.alamat || 'Tanpa alamat' }}</p>
-                                            <p class="text-slate-400">{{ loc.latitude }}, {{ loc.longitude }} &middot; radius {{ loc.radius_meters }}m</p>
+                    </thead>
+                    <tbody>
+                        <template v-for="o in offices" :key="o.id">
+                            <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                <td class="sticky left-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 shadow-[1px_0_0_0_#f1f5f9]">
+                                    <span class="inline-flex items-center px-2.5 py-1 text-xs font-bold bg-slate-100 text-slate-600 rounded-lg">{{ o.code }}</span>
+                                </td>
+                                <td class="px-4 py-3 text-sm font-semibold text-slate-700">{{ o.name }}</td>
+                                <td class="px-4 py-3 text-sm text-center text-slate-600">{{ o.members_count ?? 0 }}</td>
+                                <td class="px-4 py-3 text-center">
+                                    <button
+                                        v-if="o.locations?.length"
+                                        @click="toggleExpand(o.id)"
+                                        class="text-xs text-blue-500 hover:text-blue-600 font-medium"
+                                    >
+                                        {{ o.locations.length }} lokasi
+                                        <span class="material-symbols-rounded text-[14px] align-middle">{{ expandedId === o.id ? 'expand_less' : 'expand_more' }}</span>
+                                    </button>
+                                    <span v-else class="text-xs text-slate-400">-</span>
+                                </td>
+                                <td class="sticky right-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 text-right shadow-[-1px_0_0_0_#f1f5f9]">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button @click="openEdit(o)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
+                                            <span class="material-symbols-rounded text-[18px]">edit</span>
+                                        </button>
+                                        <button @click="confirmDelete(o.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Hapus">
+                                            <span class="material-symbols-rounded text-[18px]">delete</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Expanded locations row -->
+                            <tr v-if="expandedId === o.id && o.locations?.length">
+                                <td colspan="5" class="bg-slate-50 px-6 py-3">
+                                    <div class="space-y-2">
+                                        <div v-for="loc in o.locations" :key="loc.id" class="flex items-start gap-3 text-xs">
+                                            <span class="material-symbols-rounded text-[14px] mt-0.5" :class="loc.is_active ? 'text-emerald-500' : 'text-slate-300'">
+                                                {{ loc.is_active ? 'location_on' : 'location_off' }}
+                                            </span>
+                                            <div>
+                                                <p class="font-medium text-slate-700">{{ loc.alamat || 'Tanpa alamat' }}</p>
+                                                <p class="text-slate-400">{{ loc.latitude }}, {{ loc.longitude }} &middot; radius {{ loc.radius_meters }}m</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
             <EmptyState v-else-if="!isLoading" icon="apartment" title="Belum ada kantor" description="Tambahkan kantor pertama untuk memulai." />
         </div>
+
 
         <!-- Cards (Mobile) -->
         <div class="lg:hidden space-y-3">

@@ -183,78 +183,63 @@ const summaryCards = computed(() => [
         </div>
 
         <!-- Table (Desktop) -->
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hidden lg:block">
-            <table v-if="attList.length" class="w-full">
-                <thead>
-                    <tr class="border-b border-slate-100">
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Nama</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kantor</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Check In</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Check Out</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Status</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kehadiran</th>
-                        <th class="text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="a in attList" :key="a.id" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-bold">
-                                    {{ (a.member?.nama_lengkap || '?')[0].toUpperCase() }}
+        <div class="bg-white rounded-2xl border border-slate-200 hidden lg:block">
+            <div v-if="attList.length" class="overflow-auto max-h-[calc(100vh-26rem)]">
+                <table class="w-full min-w-[760px]">
+                    <thead class="sticky top-0 z-10">
+                        <tr class="border-b border-slate-100 bg-white">
+                            <th class="sticky left-0 z-20 bg-white text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[1px_0_0_0_#f1f5f9]">Nama</th>
+                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kantor</th>
+                            <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Check In</th>
+                            <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Check Out</th>
+                            <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Status</th>
+                            <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kehadiran</th>
+                            <th class="sticky right-0 z-20 bg-white text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[-1px_0_0_0_#f1f5f9]">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="a in attList" :key="a.id" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                            <td class="sticky left-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 shadow-[1px_0_0_0_#f1f5f9]">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-bold shrink-0">
+                                        {{ (a.member?.nama_lengkap || '?')[0].toUpperCase() }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-700 whitespace-nowrap">{{ a.member?.nama_lengkap || '-' }}</p>
+                                        <p class="text-[11px] text-slate-400">{{ a.member?.no_hp || '-' }}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-slate-700">{{ a.member?.nama_lengkap || '-' }}</p>
-                                    <p class="text-[11px] text-slate-400">{{ a.member?.no_hp || '-' }}</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ a.member?.office?.name || '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-center text-slate-600">{{ formatTime(a.check_in_time) }}</td>
-                        <td class="px-4 py-3 text-sm text-center text-slate-600">{{ formatTime(a.check_out_time) }}</td>
-                        <td class="px-4 py-3 text-center"><Badge :status="a.status" type="attendance" /></td>
-                        <td class="px-4 py-3 text-center">
-                            <span v-if="a.work_type"
-                                :class="a.work_type === 'wfo'
-                                    ? 'bg-blue-50 text-blue-600'
-                                    : 'bg-violet-50 text-violet-600'"
-                                class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full uppercase"
-                            >
-                                <span class="material-symbols-rounded text-[12px]">{{ a.work_type === 'wfo' ? 'business' : 'home_work' }}</span>
-                                {{ a.work_type.toUpperCase() }}
-                            </span>
-                            <span v-else class="text-slate-300 text-xs">-</span>
-                        </td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <!-- Tombol lihat detail absensi -->
-                                <button
-                                    @click="openDetail(a)"
-                                    class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"
-                                    title="Lihat detail absensi"
+                            </td>
+                            <td class="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">{{ a.member?.office?.name || '-' }}</td>
+                            <td class="px-4 py-3 text-sm text-center text-slate-600">{{ formatTime(a.check_in_time) }}</td>
+                            <td class="px-4 py-3 text-sm text-center text-slate-600">{{ formatTime(a.check_out_time) }}</td>
+                            <td class="px-4 py-3 text-center"><Badge :status="a.status" type="attendance" /></td>
+                            <td class="px-4 py-3 text-center">
+                                <span v-if="a.work_type"
+                                    :class="a.work_type === 'wfo' ? 'bg-blue-50 text-blue-600' : 'bg-violet-50 text-violet-600'"
+                                    class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full uppercase"
                                 >
+                                    <span class="material-symbols-rounded text-[12px]">{{ a.work_type === 'wfo' ? 'business' : 'home_work' }}</span>
+                                    {{ a.work_type.toUpperCase() }}
+                                </span>
+                                <span v-else class="text-slate-300 text-xs">-</span>
+                            </td>
+                            <td class="sticky right-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 text-right shadow-[-1px_0_0_0_#f1f5f9]">
+                                <button @click="openDetail(a)" class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Detail">
                                     <span class="material-symbols-rounded text-[18px]">visibility</span>
                                     <span class="text-[9px] font-semibold uppercase tracking-wide">Detail</span>
                                 </button>
-                                <!-- Tombol reset / koreksi data absensi
-                                <button
-                                    @click="openReset(a)"
-                                    class="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg hover:bg-amber-50 text-slate-400 hover:text-amber-600 transition-colors"
-                                    title="Reset / koreksi data absensi ini"
-                                >
-                                    <span class="material-symbols-rounded text-[18px]">restart_alt</span>
-                                    <span class="text-[9px] font-semibold uppercase tracking-wide">Reset</span>
-                                </button> -->
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <EmptyState v-else icon="fact_check" title="Tidak ada data absensi" description="Belum ada data kehadiran untuk filter yang dipilih." />
-            <div v-if="attList.length" class="px-4 pb-4">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <EmptyState v-if="!attList.length" icon="fact_check" title="Tidak ada data absensi" description="Belum ada data kehadiran untuk filter yang dipilih." />
+            <div v-if="attList.length" class="px-4 pb-4 border-t border-slate-100">
                 <Pagination v-bind="pagination" />
             </div>
         </div>
+
 
         <!-- Cards (Mobile) -->
         <div class="lg:hidden space-y-3">

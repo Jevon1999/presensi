@@ -158,7 +158,7 @@ const doDelete = () => {
         </div>
 
         <!-- Table (Desktop) -->
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hidden lg:block">
+        <div class="bg-white rounded-2xl border border-slate-200 hidden lg:block">
             <!-- Loading Skeleton -->
             <div v-if="isLoading" class="p-8">
                 <div class="animate-pulse space-y-4">
@@ -172,63 +172,66 @@ const doDelete = () => {
                 </div>
             </div>
 
-            <table v-else-if="usersList.length" class="w-full">
-                <thead>
-                    <tr class="border-b border-slate-100">
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Nama</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Email</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Role</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Status</th>
-                        <th class="text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="u in usersList" :key="u.id" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold">
-                                    {{ (u.name || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) }}
+            <div v-else-if="usersList.length" class="overflow-auto max-h-[calc(100vh-22rem)]">
+                <table class="w-full min-w-[600px]">
+                    <thead class="sticky top-0 z-10">
+                        <tr class="border-b border-slate-100 bg-white">
+                            <th class="sticky left-0 z-20 bg-white text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[1px_0_0_0_#f1f5f9]">Nama</th>
+                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Email</th>
+                            <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Role</th>
+                            <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Status</th>
+                            <th class="sticky right-0 z-20 bg-white text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[-1px_0_0_0_#f1f5f9]">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="u in usersList" :key="u.id" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                            <td class="sticky left-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 shadow-[1px_0_0_0_#f1f5f9]">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 text-xs font-bold shrink-0">
+                                        {{ (u.name || '').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) }}
+                                    </div>
+                                    <span class="text-sm font-semibold text-slate-700 whitespace-nowrap">{{ u.name }}</span>
                                 </div>
-                                <span class="text-sm font-semibold text-slate-700">{{ u.name }}</span>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ u.email }}</td>
-                        <td class="px-4 py-3 text-center">
-                            <span
-                                :class="u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'"
-                                class="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
-                            >
-                                {{ u.role === 'admin' ? 'Admin' : 'User' }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <span
-                                :class="u.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'"
-                                class="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
-                            >
-                                {{ u.is_active ? 'Aktif' : 'Nonaktif' }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <button @click="openEdit(u)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
-                                    <span class="material-symbols-rounded text-[18px]">edit</span>
-                                </button>
-                                <button 
-                                    v-if="u.id !== currentUser?.id"
-                                    @click="confirmDelete(u.id)" 
-                                    class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" 
-                                    title="Hapus"
+                            </td>
+                            <td class="px-4 py-3 text-sm text-slate-600">{{ u.email }}</td>
+                            <td class="px-4 py-3 text-center">
+                                <span
+                                    :class="u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'"
+                                    class="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
                                 >
-                                    <span class="material-symbols-rounded text-[18px]">delete</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                                    {{ u.role === 'admin' ? 'Admin' : 'User' }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span
+                                    :class="u.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'"
+                                    class="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide"
+                                >
+                                    {{ u.is_active ? 'Aktif' : 'Nonaktif' }}
+                                </span>
+                            </td>
+                            <td class="sticky right-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 text-right shadow-[-1px_0_0_0_#f1f5f9]">
+                                <div class="flex items-center justify-end gap-1">
+                                    <button @click="openEdit(u)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
+                                        <span class="material-symbols-rounded text-[18px]">edit</span>
+                                    </button>
+                                    <button
+                                        v-if="u.id !== currentUser?.id"
+                                        @click="confirmDelete(u.id)"
+                                        class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
+                                        title="Hapus"
+                                    >
+                                        <span class="material-symbols-rounded text-[18px]">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             <EmptyState v-else-if="!isLoading" icon="manage_accounts" title="Belum ada user" description="Tambahkan user pertama untuk memulai." />
         </div>
+
 
         <!-- Cards (Mobile) -->
         <div class="lg:hidden space-y-3">

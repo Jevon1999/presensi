@@ -146,13 +146,13 @@ const truncate = (str, len = 80) => {
                 <h1 class="text-xl font-bold text-slate-800">Progress</h1>
                 <p class="text-sm text-slate-400 mt-0.5">Pantau progres kerja anggota</p>
             </div>
-            <button
+            <!-- <button
                 @click="openCreate"
                 class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
             >
                 <span class="material-symbols-rounded text-[18px]">add_circle</span>
                 Tambah Progress
-            </button>
+            </button> -->
         </div>
 
         <!-- Filters -->
@@ -231,43 +231,46 @@ const truncate = (str, len = 80) => {
         </div>
 
         <!-- Table (Desktop) -->
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hidden lg:block">
-            <table v-if="list.length" class="w-full">
-                <thead>
-                    <tr class="border-b border-slate-100">
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Tanggal</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Nama</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kantor</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Deskripsi</th>
-                        <th class="text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="p in list" :key="p.id" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ formatDate(p.tanggal) }}</td>
-                        <td class="px-4 py-3">
-                            <p class="text-sm font-semibold text-slate-700">{{ p.member?.nama_lengkap || '-' }}</p>
-                        </td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ p.member?.office?.name || '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600 max-w-sm">{{ truncate(p.description) }}</td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <button @click="openEdit(p)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
-                                    <span class="material-symbols-rounded text-[18px]">edit</span>
-                                </button>
-                                <button @click="confirmDelete(p.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Hapus">
-                                    <span class="material-symbols-rounded text-[18px]">delete</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <EmptyState v-else icon="trending_up" title="Belum ada progress" description="Tambahkan progress untuk mencatat aktivitas harian." />
-            <div v-if="list.length" class="px-4 pb-4">
+        <div class="bg-white rounded-2xl border border-slate-200 hidden lg:block">
+            <div v-if="list.length" class="overflow-auto max-h-[calc(100vh-22rem)]">
+                <table class="w-full min-w-[700px]">
+                    <thead class="sticky top-0 z-10">
+                        <tr class="border-b border-slate-100 bg-white">
+                            <th class="sticky left-0 z-20 bg-white text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[1px_0_0_0_#f1f5f9] whitespace-nowrap">Tanggal</th>
+                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Nama</th>
+                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kantor</th>
+                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Deskripsi</th>
+                            <th class="sticky right-0 z-20 bg-white text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[-1px_0_0_0_#f1f5f9]">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="p in list" :key="p.id" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                            <td class="sticky left-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 text-sm text-slate-600 whitespace-nowrap shadow-[1px_0_0_0_#f1f5f9]">{{ formatDate(p.tanggal) }}</td>
+                            <td class="px-4 py-3">
+                                <p class="text-sm font-semibold text-slate-700 whitespace-nowrap">{{ p.member?.nama_lengkap || '-' }}</p>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">{{ p.member?.office?.name || '-' }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600 max-w-sm">{{ truncate(p.description) }}</td>
+                            <td class="sticky right-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 text-right shadow-[-1px_0_0_0_#f1f5f9]">
+                                <div class="flex items-center justify-end gap-1">
+                                    <button @click="openEdit(p)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
+                                        <span class="material-symbols-rounded text-[18px]">edit</span>
+                                    </button>
+                                    <button @click="confirmDelete(p.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Hapus">
+                                        <span class="material-symbols-rounded text-[18px]">delete</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <EmptyState v-if="!list.length" icon="trending_up" title="Belum ada progress" description="Tambahkan progress untuk mencatat aktivitas harian." />
+            <div v-if="list.length" class="px-4 pb-4 border-t border-slate-100">
                 <Pagination v-bind="pagination" />
             </div>
         </div>
+
 
         <!-- Cards (Mobile) -->
         <div class="lg:hidden space-y-3">

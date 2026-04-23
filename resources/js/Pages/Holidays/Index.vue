@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { router, useForm } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import axios from 'axios'
@@ -64,6 +64,23 @@ const doDelete = (id) => {
         onFinish: () => { deleting.value = null },
     })
 }
+
+// ─── Pagination ───
+const perPage    = 10
+const currentPage = ref(1)
+
+const totalPages = computed(() => Math.ceil(props.holidays.length / perPage))
+const paginatedHolidays = computed(() => {
+    const start = (currentPage.value - 1) * perPage
+    return props.holidays.slice(start, start + perPage)
+})
+const pageNumbers = computed(() => {
+    const pages = []
+    for (let i = 1; i <= totalPages.value; i++) pages.push(i)
+    return pages
+})
+
+watch(() => props.holidays, () => { currentPage.value = 1 })
 
 // ─── Hari Indonesia ───
 const dayNames = { '0': 'Minggu', '1': 'Senin', '2': 'Selasa', '3': 'Rabu', '4': 'Kamis', '5': 'Jumat', '6': 'Sabtu' }
@@ -246,7 +263,7 @@ const dayNum = (str) => new Date(str + 'T00:00:00').getDate()
 
             <!-- Rows -->
             <div
-                v-for="(h, i) in holidays"
+                v-for="(h, i) in paginatedHolidays"
                 :key="h.id"
                 :class="[i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50', 'border-b border-slate-50 last:border-0']"
                 class="grid grid-cols-12 gap-4 px-5 py-3.5 items-center hover:bg-blue-50/30 transition-colors"
@@ -291,6 +308,40 @@ const dayNum = (str) => new Date(str + 'T00:00:00').getDate()
                         title="Hapus"
                     >
                         <span class="material-symbols-rounded text-[18px]">delete</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div v-if="totalPages > 1" class="flex items-center justify-between px-5 py-3 border-t border-slate-100">
+                <p class="text-xs text-slate-400">
+                    Menampilkan {{ (currentPage - 1) * perPage + 1 }}–{{ Math.min(currentPage * perPage, holidays.length) }} dari {{ holidays.length }} data
+                </p>
+                <div class="flex items-center gap-1">
+                    <button
+                        @click="currentPage--"
+                        :disabled="currentPage === 1"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 transition-colors"
+                    >
+                        <span class="material-symbols-rounded text-[16px]">chevron_left</span>
+                    </button>
+                    <button
+                        v-for="p in pageNumbers"
+                        :key="p"
+                        @click="currentPage = p"
+                        :class="[
+                            currentPage === p
+                                ? 'bg-blue-500 text-white border-blue-500'
+                                : 'border-slate-200 text-slate-600 hover:bg-slate-50',
+                            'w-8 h-8 flex items-center justify-center rounded-lg border text-xs font-semibold transition-colors'
+                        ]"
+                    >{{ p }}</button>
+                    <button
+                        @click="currentPage++"
+                        :disabled="currentPage === totalPages"
+                        class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-600 transition-colors"
+                    >
+                        <span class="material-symbols-rounded text-[16px]">chevron_right</span>
                     </button>
                 </div>
             </div>

@@ -233,71 +233,77 @@ const statusLabel = (status) => {
         </div>
 
         <!-- Table (Desktop) -->
-        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden hidden lg:block">
-            <table v-if="membersList.length" class="w-full">
-                <thead>
-                    <tr class="border-b border-slate-100">
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Nama</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">No. HP</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kantor</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Asal Sekolah</th>
-                        <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Periode</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Status</th>
-                        <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Pengajuan</th>
-                        <th class="text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="m in membersList" :key="m.id" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                        <td class="px-4 py-3">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-bold">
-                                    {{ (m.nama_lengkap || '?')[0].toUpperCase() }}
+        <div class="bg-white rounded-2xl border border-slate-200 hidden lg:block">
+            <div v-if="membersList.length" class="overflow-auto max-h-[calc(100vh-22rem)]">
+                <table class="w-full min-w-[860px]">
+                    <thead class="sticky top-0 z-10">
+                        <tr class="border-b border-slate-100 bg-white">
+                            <th class="sticky left-0 z-20 bg-white text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[1px_0_0_0_#f1f5f9]">
+                                Nama
+                            </th>
+                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">No. HP</th>
+                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kantor</th>
+                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Asal Sekolah</th>
+                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 whitespace-nowrap">Periode</th>
+                            <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Status</th>
+                            <th class="text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Pengajuan</th>
+                            <th class="sticky right-0 z-20 bg-white text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[-1px_0_0_0_#f1f5f9]">
+                                Aksi
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="m in membersList" :key="m.id" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                            <td class="sticky left-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 shadow-[1px_0_0_0_#f1f5f9]">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-bold shrink-0">
+                                        {{ (m.nama_lengkap || '?')[0].toUpperCase() }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-slate-700 whitespace-nowrap">{{ m.nama_lengkap }}</p>
+                                        <p class="text-[11px] text-slate-400">{{ m.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="text-sm font-semibold text-slate-700">{{ m.nama_lengkap }}</p>
-                                    <p class="text-[11px] text-slate-400">{{ m.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}</p>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">{{ m.no_hp || '-' }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">{{ m.office?.name || '-' }}</td>
+                            <td class="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">{{ m.asal_sekolah || '-' }}</td>
+                            <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">
+                                {{ formatDate(m.tanggal_mulai_magang) }} — {{ formatDate(m.tanggal_selesai_magang) }}
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <Badge :status="String(m.status_aktif)" type="member" />
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <span v-if="m.status" :class="[statusBadgeClass(m.status), 'text-[10px] font-semibold px-2 py-0.5 rounded-full border']">
+                                    {{ statusLabel(m.status) }}
+                                </span>
+                                <span v-else class="text-[10px] text-slate-400">-</span>
+                            </td>
+                            <td class="sticky right-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 text-right shadow-[-1px_0_0_0_#f1f5f9]">
+                                <div class="flex items-center justify-end gap-1">
+                                    <template v-if="m.status === 'pending'">
+                                        <button @click="handleApprove(m.id)" :disabled="approveProcessing === m.id" class="p-1.5 rounded-lg hover:bg-green-50 text-slate-400 hover:text-green-600 transition-colors" title="Setujui">
+                                            <span class="material-symbols-rounded text-[18px]">check_circle</span>
+                                        </button>
+                                        <button @click="openRejectDialog(m.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Tolak">
+                                            <span class="material-symbols-rounded text-[18px]">cancel</span>
+                                        </button>
+                                    </template>
+                                    <button v-if="m.status === 'approved' && m.status_aktif" @click="openEdit(m)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
+                                        <span class="material-symbols-rounded text-[18px]">edit</span>
+                                    </button>
+                                    <button @click="confirmDelete(m.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Hapus">
+                                        <span class="material-symbols-rounded text-[18px]">delete</span>
+                                    </button>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ m.no_hp || '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ m.office?.name || '-' }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ m.asal_sekolah || '-' }}</td>
-                        <td class="px-4 py-3 text-xs text-slate-500">
-                            {{ formatDate(m.tanggal_mulai_magang) }} — {{ formatDate(m.tanggal_selesai_magang) }}
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <Badge :status="String(m.status_aktif)" type="member" />
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <span v-if="m.status" :class="[statusBadgeClass(m.status), 'text-[10px] font-semibold px-2 py-0.5 rounded-full border']">
-                                {{ statusLabel(m.status) }}
-                            </span>
-                            <span v-else class="text-[10px] text-slate-400">-</span>
-                        </td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <template v-if="m.status === 'pending'">
-                                    <button @click="handleApprove(m.id)" :disabled="approveProcessing === m.id" class="p-1.5 rounded-lg hover:bg-green-50 text-slate-400 hover:text-green-600 transition-colors" title="Setujui">
-                                        <span class="material-symbols-rounded text-[18px]">check_circle</span>
-                                    </button>
-                                    <button @click="openRejectDialog(m.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Tolak">
-                                        <span class="material-symbols-rounded text-[18px]">cancel</span>
-                                    </button>
-                                </template>
-                                <button v-if="m.status === 'approved' && m.status_aktif" @click="openEdit(m)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
-                                    <span class="material-symbols-rounded text-[18px]">edit</span>
-                                </button>
-                                <button @click="confirmDelete(m.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Hapus">
-                                    <span class="material-symbols-rounded text-[18px]">delete</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <EmptyState v-else icon="group" title="Belum ada anggota" description="Tambahkan anggota pertama untuk memulai." />
-            <div v-if="membersList.length" class="px-4 pb-4">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <EmptyState v-if="!membersList.length" icon="group" title="Belum ada anggota" description="Tambahkan anggota pertama untuk memulai." />
+            <div v-if="membersList.length" class="px-4 pb-4 border-t border-slate-100">
                 <Pagination v-bind="pagination" />
             </div>
         </div>

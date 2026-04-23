@@ -47,6 +47,7 @@ const navItems = [
     { name: 'Kantor',     href: '/offices',             icon: 'apartment',       match: '/offices' },
     { name: 'Users',      href: '/users',               icon: 'manage_accounts', match: '/users' },
     { name: 'Bot WA',     href: '/bot/config',          icon: 'smart_toy',       match: '/bot' },
+    { name: 'Hari Libur', href: '/holidays',            icon: 'event_busy',      match: '/holidays' },
 ]
 
 const currentPath = computed(() => page.url.split('?')[0])

@@ -172,7 +172,7 @@ class AttendanceController extends Controller
         try {
             $params = $request->only(['start_date', 'end_date', 'member_id', 'office_id']);
             if (empty($params['start_date'])) $params['start_date'] = now()->startOfMonth()->format('Y-m-d');
-            if (empty($params['end_date'])) $params['end_date'] = now()->format('Y-m-d');
+            if (empty($params['end_date']))   $params['end_date']   = now()->format('Y-m-d');
 
             $response = $this->api()->get("{$this->apiUrl}/attendances/report", $params);
 
@@ -180,42 +180,112 @@ class AttendanceController extends Controller
                 return back()->with('error', 'Gagal mengexport data.');
             }
 
-            $data = $response->json();
+            $data       = $response->json();
             $attendances = $data['attendances'] ?? [];
+            $stats       = $data['statistics']  ?? [];
+            $period      = $data['period']       ?? [];
 
-            $filename = "laporan-absensi-{$params['start_date']}-{$params['end_date']}.csv";
+            // Format tanggal untuk display
+            $startFmt = \Carbon\Carbon::parse($params['start_date'])->translatedFormat('d F Y');
+            $endFmt   = \Carbon\Carbon::parse($params['end_date'])->translatedFormat('d F Y');
+            $generated = now()->translatedFormat('d F Y, H:i') . ' WIB';
+
+            // Hitung persentase kehadiran
+            $total     = $stats['total_days'] ?? count($attendances);
+            $hadirPct  = $total > 0 ? round(($stats['hadir']  / $total) * 100, 1) : 0;
+            $alphaPct  = $total > 0 ? round(($stats['alpha']  / $total) * 100, 1) : 0;
+            $izinPct   = $total > 0 ? round(($stats['izin']   / $total) * 100, 1) : 0;
+            $sakitPct  = $total > 0 ? round(($stats['sakit']  / $total) * 100, 1) : 0;
+
+            $filename = "Laporan_Absensi_{$params['start_date']}_sd_{$params['end_date']}.csv";
 
             $headers = [
-                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Type'        => 'text/csv; charset=UTF-8',
                 'Content-Disposition' => "attachment; filename=\"{$filename}\"",
             ];
 
-            $callback = function () use ($attendances, $params) {
+            $callback = function () use ($attendances, $stats, $params, $startFmt, $endFmt, $generated, $total, $hadirPct, $alphaPct, $izinPct, $sakitPct) {
                 $file = fopen('php://output', 'w');
-                // BOM for UTF-8
+                // BOM agar Excel tidak rusak encoding UTF-8
                 fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-                // Title
-                fputcsv($file, ['Laporan Absensi']);
-                fputcsv($file, ["Periode: {$params['start_date']} s/d {$params['end_date']}"]);
-                fputcsv($file, []);
+                // ══════════════════════════════════════
+                // HEADER INSTITUSI
+                // ══════════════════════════════════════
+                fputcsv($file, ['PT. GLOBAL INTERMEDIA LINTAS BATAS']);
+                fputcsv($file, ['LAPORAN REKAPITULASI ABSENSI PESERTA MAGANG']);
+                fputcsv($file, ['']);
 
-                // Header
-                fputcsv($file, ['No', 'Tanggal', 'Nama', 'Kantor', 'Check In', 'Check Out', 'Status', 'Kehadiran']);
+                // ══════════════════════════════════════
+                // INFO LAPORAN
+                // ══════════════════════════════════════
+                fputcsv($file, ['Periode Laporan', "  {$startFmt}  s/d  {$endFmt}"]);
+                fputcsv($file, ['Dibuat Pada',     "  {$generated}"]);
+                fputcsv($file, ['Total Data',      "  {$total} record absensi"]);
+                fputcsv($file, ['']);
+
+                // ══════════════════════════════════════
+                // RINGKASAN STATISTIK
+                // ══════════════════════════════════════
+                fputcsv($file, ['RINGKASAN KEHADIRAN']);
+                fputcsv($file, ['Status', 'Jumlah', 'Persentase']);
+                fputcsv($file, ['Hadir',  $stats['hadir']  ?? 0, $hadirPct . '%']);
+                fputcsv($file, ['Izin',   $stats['izin']   ?? 0, $izinPct  . '%']);
+                fputcsv($file, ['Sakit',  $stats['sakit']  ?? 0, $sakitPct . '%']);
+                fputcsv($file, ['Alpha',  $stats['alpha']  ?? 0, $alphaPct . '%']);
+                fputcsv($file, ['WFO',    $stats['wfo']    ?? 0, $total > 0 ? round((($stats['wfo'] ?? 0) / $total) * 100, 1) . '%' : '0%']);
+                fputcsv($file, ['WFA',    $stats['wfa']    ?? 0, $total > 0 ? round((($stats['wfa'] ?? 0) / $total) * 100, 1) . '%' : '0%']);
+                fputcsv($file, ['TOTAL',  $total,           '100%']);
+                fputcsv($file, ['']);
+
+                // ══════════════════════════════════════
+                // TABEL DETAIL ABSENSI
+                // ══════════════════════════════════════
+                fputcsv($file, ['DETAIL DATA ABSENSI']);
+                fputcsv($file, [
+                    'No',
+                    'Tanggal',
+                    'Nama Lengkap',
+                    'Asal Sekolah / Kampus',
+                    'Jurusan',
+                    'Kantor',
+                    'Jam Check In',
+                    'Jam Check Out',
+                    'Status Kehadiran',
+                    'Tipe Kehadiran',
+                    'Terlambat',
+                ]);
 
                 $no = 1;
                 foreach ($attendances as $att) {
+                    $member   = $att['member'] ?? [];
+                    $isLate   = ($att['is_late'] ?? false) ? 'Ya' : 'Tidak';
+                    $status   = strtoupper($att['status'] ?? '-');
+                    $workType = isset($att['work_type']) && $att['work_type']
+                                    ? strtoupper($att['work_type'])
+                                    : '-';
+
                     fputcsv($file, [
                         $no++,
                         $att['tanggal'] ?? '-',
-                        $att['member']['nama_lengkap'] ?? $att['member']['name'] ?? '-',
-                        $att['member']['office']['name'] ?? '-',
-                        $att['check_in_time'] ?? '-',
+                        $member['nama_lengkap'] ?? $member['name'] ?? '-',
+                        $member['asal_sekolah'] ?? '-',
+                        $member['jurusan'] ?? '-',
+                        $member['office']['name'] ?? '-',
+                        $att['check_in_time']  ?? '-',
                         $att['check_out_time'] ?? '-',
-                        $att['status'] ?? '-',
-                        isset($att['work_type']) ? strtoupper($att['work_type']) : '-',
+                        $status,
+                        $workType,
+                        $isLate,
                     ]);
                 }
+
+                // ══════════════════════════════════════
+                // FOOTER
+                // ══════════════════════════════════════
+                fputcsv($file, ['']);
+                fputcsv($file, ['--- Akhir Laporan ---']);
+                fputcsv($file, ["Total {$total} record ditampilkan"]);
 
                 fclose($file);
             };
@@ -227,3 +297,4 @@ class AttendanceController extends Controller
         }
     }
 }
+

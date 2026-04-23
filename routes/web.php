@@ -13,6 +13,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\MemberApplyController;
 use App\Http\Controllers\MemberDashboardController;
 use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\HolidayController;
 
 /*
 |--------------------------------------------------------------------------
@@ -124,6 +125,14 @@ Route::middleware(['web'])->group(function () {
             Route::post('/broadcast', [BotController::class, 'broadcastMessage'])->name('broadcast');
             Route::get('/screenshot', [BotController::class, 'screenshot'])->name('screenshot');
             Route::get('/lookup-member', [BotController::class, 'lookupMember'])->name('lookup-member');
+        });
+
+        // Holidays — Hari Libur Nasional
+        Route::prefix('holidays')->name('holidays.')->group(function () {
+            Route::get('/', [HolidayController::class, 'index'])->name('index');
+            Route::post('/', [HolidayController::class, 'store'])->name('store');
+            Route::post('/sync', [HolidayController::class, 'sync'])->name('sync');
+            Route::delete('/{id}', [HolidayController::class, 'destroy'])->name('destroy');
         });
     });
 

@@ -345,6 +345,13 @@ class BotController extends Controller
                 $pool->as('members')->withToken($this->token())->timeout(15)->get("{$this->apiUrl}/members", ['per_page' => 200]),
             ]);
 
+            if ($responses['config'] instanceof \Exception) {
+                throw $responses['config'];
+            }
+            if ($responses['members'] instanceof \Exception) {
+                throw $responses['members'];
+            }
+
             if ($responses['config']->status() === 401 || $responses['members']->status() === 401) {
                 session()->forget(['auth_token', 'user']);
                 return redirect()->route('login')->with('error', 'Sesi Anda telah berakhir.');

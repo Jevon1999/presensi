@@ -44,7 +44,7 @@ class DashboardController extends Controller
 
             // Check for 401 - token expired
             foreach ($responses as $key => $response) {
-                if ($response instanceof \GuzzleHttp\Exception\ConnectException) {
+                if ($response instanceof \Exception) {
                     throw new \Exception('Tidak dapat terhubung ke server API.');
                 }
                 if ($response->status() === 401) {

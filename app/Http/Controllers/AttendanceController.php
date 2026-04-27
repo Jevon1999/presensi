@@ -46,6 +46,10 @@ class AttendanceController extends Controller
                     ->get("{$this->apiUrl}/members", ['per_page' => 200]),
             ]);
 
+            if ($responses['attendances'] instanceof \Exception) {
+                throw $responses['attendances'];
+            }
+
             if ($responses['attendances']->status() === 401) {
                 session()->forget(['auth_token', 'user']);
                 return redirect()->route('login')->with('error', 'Sesi Anda telah berakhir.');
@@ -158,6 +162,10 @@ class AttendanceController extends Controller
                 $pool->as('members')->withToken($this->token())->timeout(15)
                     ->get("{$this->apiUrl}/members", ['per_page' => 200]),
             ]);
+
+            if ($responses['report'] instanceof \Exception) {
+                throw $responses['report'];
+            }
 
             if ($responses['report']->status() === 401) {
                 session()->forget(['auth_token', 'user']);

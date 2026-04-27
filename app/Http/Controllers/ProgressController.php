@@ -36,6 +36,10 @@ class ProgressController extends Controller
                     ->get("{$this->apiUrl}/members", ['per_page' => 200]),
             ]);
 
+            if ($responses['progresses'] instanceof \Exception) {
+                throw $responses['progresses'];
+            }
+
             if ($responses['progresses']->status() === 401) {
                 session()->forget(['auth_token', 'user']);
                 return redirect()->route('login')->with('error', 'Sesi Anda telah berakhir.');

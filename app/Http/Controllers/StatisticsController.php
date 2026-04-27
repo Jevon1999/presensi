@@ -41,6 +41,10 @@ class StatisticsController extends Controller
                     ->get("{$this->apiUrl}/offices"),
             ]);
 
+            if ($responses['stats'] instanceof \Exception) {
+                throw $responses['stats'];
+            }
+
             if ($responses['stats']->status() === 401) {
                 session()->forget(['auth_token', 'user']);
                 return redirect()->route('login')->with('error', 'Sesi Anda telah berakhir.');

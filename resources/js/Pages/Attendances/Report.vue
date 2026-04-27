@@ -38,13 +38,13 @@ const filteredMembers = computed(() => {
     if (!memberSearch.value) return props.members
     const s = memberSearch.value.toLowerCase()
     return props.members.filter(m => 
-        m.nama_lengkap.toLowerCase().includes(s)
+        m?.nama_lengkap?.toLowerCase().includes(s)
     )
 })
 const selectedMemberName = computed(() => {
     if (!memberFilter.value) return ''
     const m = props.members.find(m => m.id == memberFilter.value)
-    return m ? m.nama_lengkap : ''
+    return m?.nama_lengkap || ''
 })
 const selectMember = (m) => {
     memberFilter.value = m.id

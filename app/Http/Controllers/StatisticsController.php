@@ -57,7 +57,7 @@ class StatisticsController extends Controller
             }
 
             $statsData = $responses['stats']->json();
-            $offices   = $responses['offices']->json()['data'] ?? [];
+            $offices   = $responses['offices']->json('data', []);
 
             return Inertia::render('Statistics/Index', [
                 'stats'   => $statsData,

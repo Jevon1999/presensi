@@ -47,7 +47,7 @@ class ProgressController extends Controller
 
             return Inertia::render('Progresses/Index', [
                 'progresses' => $responses['progresses']->json(),
-                'members' => $responses['members']->json()['data'] ?? [],
+                'members' => $responses['members']->json('data', []),
                 'filters' => $request->only(['member_id', 'start_date', 'end_date']),
             ]);
         } catch (\Exception $e) {

@@ -49,6 +49,12 @@ class AttendanceController extends Controller
             if ($responses['attendances'] instanceof \Exception) {
                 throw $responses['attendances'];
             }
+            if ($responses['offices'] instanceof \Exception) {
+                throw $responses['offices'];
+            }
+            if ($responses['members'] instanceof \Exception) {
+                throw $responses['members'];
+            }
 
             if ($responses['attendances']->status() === 401) {
                 session()->forget(['auth_token', 'user']);
@@ -56,8 +62,8 @@ class AttendanceController extends Controller
             }
 
             $attendancesData = $responses['attendances']->json();
-            $offices = $responses['offices']->json()['data'] ?? [];
-            $members = $responses['members']->json()['data'] ?? [];
+            $offices = $responses['offices']->json('data', []);
+            $members = $responses['members']->json('data', []);
 
             // Calculate summary stats
             $allData = $attendancesData['data'] ?? [];
@@ -166,6 +172,12 @@ class AttendanceController extends Controller
             if ($responses['report'] instanceof \Exception) {
                 throw $responses['report'];
             }
+            if ($responses['offices'] instanceof \Exception) {
+                throw $responses['offices'];
+            }
+            if ($responses['members'] instanceof \Exception) {
+                throw $responses['members'];
+            }
 
             if ($responses['report']->status() === 401) {
                 session()->forget(['auth_token', 'user']);
@@ -188,8 +200,8 @@ class AttendanceController extends Controller
 
             return Inertia::render('Attendances/Report', [
                 'report' => $reportData,
-                'offices' => $responses['offices']->json()['data'] ?? [],
-                'members' => $responses['members']->json()['data'] ?? [],
+                'offices' => $responses['offices']->json('data', []),
+                'members' => $responses['members']->json('data', []),
                 'filters' => $params,
             ]);
         } catch (\Exception $e) {

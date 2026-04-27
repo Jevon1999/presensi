@@ -53,9 +53,9 @@ class DashboardController extends Controller
                 }
             }
 
-            $todayAttendances = $responses['today_attendances']->json()['data'] ?? [];
-            $members = $responses['members']->json()['data'] ?? [];
-            $offices = $responses['offices']->json()['data'] ?? [];
+            $todayAttendances = $responses['today_attendances']->json('data', []);
+            $members = $responses['members']->json('data', []);
+            $offices = $responses['offices']->json('data', []);
 
             $activeMembers = array_filter($members, fn($m) => ($m['status_aktif'] ?? true));
             $totalMembers = count($activeMembers);

@@ -63,16 +63,16 @@ class MemberController extends Controller
             }
 
             $membersData = $responses['members']->json();
-            $offices = $responses['offices']->json()['data'] ?? [];
+            $offices = $responses['offices']->json('data', []);
             
             // Get users from the remote API
-            $rawUsers = $responses['users']->json()['data'] ?? [];
+            $rawUsers = $responses['users']->json('data', []);
             
             // Fetch all members' statuses to filter out those who are already pending/approved
             // To do this simply, we'll hit the API for all members limit 500, or just rely on what we can.
             // But since we want to be reliable with remote API, let's just make a separate request or use the current array.
             $allMembersListRes = Http::withToken($this->token())->timeout(15)->get("{$this->apiUrl}/members");
-            $allMembers = $allMembersListRes->json()['data'] ?? [];
+            $allMembers = $allMembersListRes->json('data', []);
             $existingUserIds = collect($allMembers)
                 ->filter(fn($m) => in_array($m['status'], ['pending', 'approved']))
                 ->pluck('user_id')

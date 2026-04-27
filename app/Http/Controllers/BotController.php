@@ -43,6 +43,36 @@ class BotController extends Controller
     }
 
     /**
+     * Fetch WAHA config (session name + API key) from the backend API.
+     * Returns [sessionName, apiKey] or a redirect response on failure.
+     */
+    private function getWahaConfig()
+    {
+        $configResp = $this->api()->get("{$this->apiUrl}/bot-configs");
+
+        if ($configResp->status() === 401) {
+            session()->forget(['auth_token', 'user']);
+            return ['redirect' => redirect()->route('login')->with('error', 'Sesi Anda telah berakhir.')];
+        }
+
+        if (!$configResp->successful()) {
+            Log::error('Failed to fetch bot-configs', ['status' => $configResp->status(), 'body' => $configResp->body()]);
+            return ['error' => 'Gagal memuat konfigurasi bot. (HTTP ' . $configResp->status() . ')'];
+        }
+
+        $config = $configResp->json('data', []);
+        $sessionName = $config['waha_session_name'] ?? 'default';
+        $apiKey = $config['waha_api_key'] ?? '';
+
+        if (empty($apiKey)) {
+            Log::warning('WAHA API key is empty in bot-configs', ['config_keys' => array_keys($config)]);
+            return ['error' => 'WAHA API Key belum dikonfigurasi. Hubungi administrator untuk mengatur API Key di konfigurasi bot.'];
+        }
+
+        return ['sessionName' => $sessionName, 'apiKey' => $apiKey];
+    }
+
+    /**
      * Bot Config page — fetches bot_configs from API
      */
     public function config(Request $request)
@@ -287,6 +317,12 @@ class BotController extends Controller
             }
 
             $membersResp = $this->api()->get("{$this->apiUrl}/members", ['per_page' => 500]);
+
+            if ($membersResp->status() === 401) {
+                session()->forget(['auth_token', 'user']);
+                return redirect()->route('login')->with('error', 'Sesi Anda telah berakhir.');
+            }
+
             $members = $membersResp->json('data', []);
             $isMember = false;
             foreach ($members as $member) {
@@ -304,12 +340,17 @@ class BotController extends Controller
                 return back()->withErrors(['phone' => 'Nomor ini bukan member aktif. Pesan hanya dapat dikirim ke member yang sudah disetujui dan masih aktif.']);
             }
 
-            $configResp = $this->api()->get("{$this->apiUrl}/bot-configs");
-            $config = $configResp->json('data', []);
+            // Fetch WAHA config with proper validation
+            $wahaConfig = $this->getWahaConfig();
+            if (isset($wahaConfig['redirect'])) {
+                return $wahaConfig['redirect'];
+            }
+            if (isset($wahaConfig['error'])) {
+                return back()->with('error', $wahaConfig['error']);
+            }
 
-            $sessionName = $config['waha_session_name'] ?? 'default';
-            $apiKey = $config['waha_api_key'] ?? '';
-
+            $sessionName = $wahaConfig['sessionName'];
+            $apiKey = $wahaConfig['apiKey'];
             $chatId = $phone . '@c.us';
 
             $wahaResp = $this->waha($apiKey)->post('/api/sendText', [
@@ -319,7 +360,19 @@ class BotController extends Controller
             ]);
 
             if (!$wahaResp->successful()) {
-                return back()->with('error', 'Gagal mengirim pesan. (' . $wahaResp->status() . ')');
+                $errorDetail = $wahaResp->json('message', '');
+                Log::error('WAHA sendText failed', [
+                    'status' => $wahaResp->status(),
+                    'body' => $wahaResp->body(),
+                    'chatId' => $chatId,
+                    'session' => $sessionName,
+                ]);
+
+                if ($wahaResp->status() === 401) {
+                    return back()->with('error', 'WAHA API Key tidak valid. Periksa konfigurasi API Key pada bot settings.');
+                }
+
+                return back()->with('error', 'Gagal mengirim pesan. (' . $wahaResp->status() . ($errorDetail ? ": $errorDetail" : '') . ')');
             }
 
             return back()->with('success', 'Pesan berhasil dikirim ke ' . $request->phone);
@@ -342,12 +395,17 @@ class BotController extends Controller
             // Fetch bot config + members in parallel
             $responses = Http::pool(fn($pool) => [
                 $pool->as('config')->withToken($this->token())->timeout(15)->get("{$this->apiUrl}/bot-configs"),
-                $pool->as('members')->withToken($this->token())->timeout(15)->get("{$this->apiUrl}/members", ['per_page' => 200]),
+                $pool->as('members')->withToken($this->token())->timeout(15)->get("{$this->apiUrl}/members", ['per_page' => 500]),
             ]);
 
             if ($responses['config']->status() === 401 || $responses['members']->status() === 401) {
                 session()->forget(['auth_token', 'user']);
                 return redirect()->route('login')->with('error', 'Sesi Anda telah berakhir.');
+            }
+
+            if (!$responses['config']->successful()) {
+                Log::error('Broadcast: failed to fetch bot-configs', ['status' => $responses['config']->status()]);
+                return back()->with('error', 'Gagal memuat konfigurasi bot. (HTTP ' . $responses['config']->status() . ')');
             }
 
             $config = $responses['config']->json('data', []);
@@ -356,8 +414,14 @@ class BotController extends Controller
             $sessionName = $config['waha_session_name'] ?? 'default';
             $apiKey = $config['waha_api_key'] ?? '';
 
+            if (empty($apiKey)) {
+                Log::warning('Broadcast: WAHA API key is empty in bot-configs', ['config_keys' => array_keys($config)]);
+                return back()->with('error', 'WAHA API Key belum dikonfigurasi. Hubungi administrator untuk mengatur API Key di konfigurasi bot.');
+            }
+
             $sent = 0;
             $failed = 0;
+            $firstError = null;
             $wahaUrl = env('WAHA_API_URL', 'https://waha.globalintermedia.online');
 
             foreach ($members as $member) {
@@ -385,6 +449,14 @@ class BotController extends Controller
                         $sent++;
                     } else {
                         $failed++;
+                        if (!$firstError) {
+                            $firstError = 'HTTP ' . $resp->status() . ': ' . $resp->json('message', $resp->body());
+                        }
+                        // If first message fails with 401, API key is wrong — abort early
+                        if ($resp->status() === 401 && $sent === 0) {
+                            Log::error('Broadcast: WAHA API key rejected (401)', ['session' => $sessionName]);
+                            return back()->with('error', 'WAHA API Key tidak valid. Periksa konfigurasi API Key pada bot settings.');
+                        }
                     }
                 } catch (\Exception $e) {
                     $failed++;
@@ -394,7 +466,16 @@ class BotController extends Controller
                 usleep(300000); // 300ms
             }
 
-            return back()->with('success', "Broadcast selesai. Terkirim: {$sent}, Gagal: {$failed}");
+            if ($sent === 0 && $failed === 0) {
+                return back()->with('error', 'Tidak ada member aktif yang memiliki nomor HP untuk dikirim broadcast.');
+            }
+
+            $msg = "Broadcast selesai. Terkirim: {$sent}, Gagal: {$failed}";
+            if ($failed > 0 && $firstError) {
+                $msg .= " (Error pertama: {$firstError})";
+            }
+
+            return back()->with($sent > 0 ? 'success' : 'error', $msg);
         } catch (\Exception $e) {
             Log::error('WAHA broadcast error: ' . $e->getMessage());
             return back()->with('error', 'Gagal melakukan broadcast.');

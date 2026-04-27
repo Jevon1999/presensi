@@ -17,6 +17,8 @@ const flash = computed(() => page.props.flash)
 const editingTemplates = ref(false)
 
 const form = useForm({
+    waha_session_name:         props.config?.waha_session_name || 'default',
+    waha_api_key:              props.config?.waha_api_key || '',
     is_active:                 props.config?.is_active ?? false,
     reminder_enabled:          props.config?.reminder_enabled ?? false,
     reminder_time:             props.config?.reminder_time || '07:00',
@@ -29,8 +31,12 @@ const form = useForm({
     message_remind_late:       props.config?.message_remind_late || "⚠️ *Notifikasi Keterlambatan*\n\nHalo {nama}! Kamu belum check-in hari ini dan melewati batas waktu telat/alpha.",
 })
 
+const showApiKey = ref(false)
+
 watch(() => props.config, (c) => {
     if (c) {
+        form.waha_session_name         = c.waha_session_name || 'default'
+        form.waha_api_key              = c.waha_api_key || ''
         form.is_active                 = c.is_active ?? false
         form.reminder_enabled          = c.reminder_enabled ?? false
         form.reminder_time             = c.reminder_time || '07:00'
@@ -112,6 +118,46 @@ const saveTemplates = () => {
             />
 
             <form @submit.prevent="save" class="space-y-3">
+
+                <!-- Koneksi WAHA -->
+                <div class="bg-blue-50 rounded-xl p-3 space-y-2.5 border border-blue-100">
+                    <div class="flex items-center gap-1.5">
+                        <span class="material-symbols-rounded text-[16px] text-blue-500">link</span>
+                        <p class="text-sm font-semibold text-slate-700">Koneksi WAHA</p>
+                    </div>
+                    <p class="text-xs text-slate-500">Konfigurasi koneksi ke WAHA WhatsApp API</p>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">Session Name</label>
+                        <input
+                            v-model="form.waha_session_name"
+                            type="text"
+                            placeholder="default"
+                            class="w-full px-3 py-1.5 text-sm rounded-lg border border-blue-200 bg-white text-slate-700 focus:border-blue-400 outline-none"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-500 mb-1">API Key</label>
+                        <div class="relative">
+                            <input
+                                v-model="form.waha_api_key"
+                                :type="showApiKey ? 'text' : 'password'"
+                                placeholder="Masukkan WAHA API Key"
+                                class="w-full px-3 py-1.5 text-sm rounded-lg border border-blue-200 bg-white text-slate-700 focus:border-blue-400 outline-none pr-10"
+                            />
+                            <button
+                                type="button"
+                                @click="showApiKey = !showApiKey"
+                                class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                            >
+                                <span class="material-symbols-rounded text-[18px]">{{ showApiKey ? 'visibility_off' : 'visibility' }}</span>
+                            </button>
+                        </div>
+                        <p v-if="!form.waha_api_key" class="text-[11px] text-amber-600 mt-1 flex items-center gap-1">
+                            <span class="material-symbols-rounded text-[12px]">warning</span>
+                            API Key wajib diisi agar fitur kirim pesan berfungsi
+                        </p>
+                    </div>
+                </div>
 
                 <!-- Status Bot -->
                 <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50">

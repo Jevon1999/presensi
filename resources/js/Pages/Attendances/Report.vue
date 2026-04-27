@@ -4,6 +4,7 @@ import { router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import Badge from '@/Components/Badge.vue'
 import EmptyState from '@/Components/EmptyState.vue'
+import Pagination from '@/Components/Pagination.vue'
 
 import flatPickr from 'vue-flatpickr-component'
 import 'flatpickr/dist/flatpickr.css'
@@ -83,7 +84,16 @@ const exportPdf = () => {
 }
 
 const stats = computed(() => props.report?.statistics || {})
-const attendances = computed(() => props.report?.attendances || [])
+const attendances = computed(() => {
+    const att = props.report?.attendances
+    return att?.data ? att.data : (Array.isArray(att) ? att : [])
+})
+const pagination = computed(() => ({
+    links: props.report?.attendances?.links || [],
+    from: props.report?.attendances?.from || 0,
+    to: props.report?.attendances?.to || 0,
+    total: props.report?.attendances?.total || 0,
+}))
 
 const statsCards = computed(() => [
     { label: 'Total Hari', value: stats.value.total_days || 0, icon: 'calendar_month', color: 'bg-slate-100 text-slate-600' },
@@ -305,6 +315,9 @@ const formatTime = (t) => t || '-'
                 </tbody>
             </table>
             <EmptyState v-else icon="assessment" title="Tidak ada data" description="Pilih filter dan klik Tampilkan untuk melihat laporan." />
+            <div v-if="attendances.length" class="px-4 pb-4 border-t border-slate-100 print:hidden mt-4">
+                <Pagination v-bind="pagination" />
+            </div>
         </div>
 
         <!-- Cards (Mobile, hidden on print) -->
@@ -355,6 +368,9 @@ const formatTime = (t) => t || '-'
                 </div>
             </div>
             <EmptyState v-if="!attendances.length" icon="assessment" title="Tidak ada data" description="Pilih filter dan klik Tampilkan untuk melihat laporan." />
+            <div v-if="attendances.length" class="print:hidden">
+                <Pagination v-bind="pagination" />
+            </div>
         </div>
     </div>
 </template>

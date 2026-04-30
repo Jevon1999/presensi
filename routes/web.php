@@ -141,6 +141,9 @@ Route::middleware(['web'])->group(function () {
     Route::middleware(['token', 'member'])->prefix('member')->group(function () {
         Route::get('/dashboard', [MemberDashboardController::class, 'dashboard'])->name('member.dashboard');
         Route::get('/progress', [MemberDashboardController::class, 'progress'])->name('member.progress');
+        Route::post('/progress', [MemberDashboardController::class, 'storeProgress'])->name('member.progress.store');
+        Route::put('/progress/{id}', [MemberDashboardController::class, 'updateProgress'])->name('member.progress.update');
+        Route::delete('/progress/{id}', [MemberDashboardController::class, 'destroyProgress'])->name('member.progress.destroy');
         Route::get('/report', [MemberDashboardController::class, 'report'])->name('member.report');
     });
 });

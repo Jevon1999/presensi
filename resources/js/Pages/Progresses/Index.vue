@@ -149,13 +149,13 @@ const truncate = (str, len = 80) => {
                 <h1 class="text-xl font-bold text-slate-800">Progress</h1>
                 <p class="text-sm text-slate-400 mt-0.5">Pantau progres kerja anggota</p>
             </div>
-            <!-- <button
+            <button
                 @click="openCreate"
                 class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
             >
                 <span class="material-symbols-rounded text-[18px]">add_circle</span>
                 Tambah Progress
-            </button> -->
+            </button>
         </div>
 
         <!-- Filters -->

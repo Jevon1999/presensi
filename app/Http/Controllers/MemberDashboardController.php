@@ -90,14 +90,87 @@ class MemberDashboardController extends Controller
             $data = $response->json();
 
             return Inertia::render('Member/Progress', [
-                'progresses' => $response->successful() ? $data : ['data' => []],
+                'progresses'       => $response->successful() ? $data : ['data' => []],
+                'today_attendance' => $data['today_attendance'] ?? null,
+                'member'           => $data['member'] ?? null,
             ]);
         } catch (\Exception $e) {
             Log::error('Member progress error: ' . $e->getMessage());
             return Inertia::render('Member/Progress', [
-                'progresses' => ['data' => []],
-                'error' => 'Gagal memuat data.',
+                'progresses'       => ['data' => []],
+                'today_attendance' => null,
+                'member'           => null,
+                'error'            => 'Gagal memuat data.',
             ]);
+        }
+    }
+
+    public function storeProgress(Request $request)
+    {
+        try {
+            $response = $this->api()->post("{$this->apiUrl}/member/progress", $request->all());
+
+            if ($response->status() === 401 || $response->status() === 403) {
+                $msg = $response->json('message') ?? 'Akses ditolak.';
+                if ($response->status() === 401) return $this->invalidSession();
+                return back()->with('error', $msg);
+            }
+            if ($response->status() === 422) {
+                return back()->withErrors($response->json('errors', []))->with('error', $response->json('message', 'Data tidak valid.'));
+            }
+            if (!$response->successful()) {
+                return back()->with('error', 'Gagal menyimpan progress. (' . $response->status() . ')');
+            }
+
+            return back()->with('success', 'Progress berhasil disimpan.');
+        } catch (\Exception $e) {
+            Log::error('Member store progress error: ' . $e->getMessage());
+            return back()->with('error', 'Tidak dapat terhubung ke server.');
+        }
+    }
+
+    public function updateProgress(Request $request, $id)
+    {
+        try {
+            $response = $this->api()->put("{$this->apiUrl}/member/progress/{$id}", $request->all());
+
+            if ($response->status() === 401 || $response->status() === 403) {
+                $msg = $response->json('message') ?? 'Akses ditolak.';
+                if ($response->status() === 401) return $this->invalidSession();
+                return back()->with('error', $msg);
+            }
+            if ($response->status() === 422) {
+                return back()->withErrors($response->json('errors', []))->with('error', $response->json('message', 'Data tidak valid.'));
+            }
+            if (!$response->successful()) {
+                return back()->with('error', 'Gagal mengupdate progress. (' . $response->status() . ')');
+            }
+
+            return back()->with('success', 'Progress berhasil diupdate.');
+        } catch (\Exception $e) {
+            Log::error('Member update progress error: ' . $e->getMessage());
+            return back()->with('error', 'Tidak dapat terhubung ke server.');
+        }
+    }
+
+    public function destroyProgress(Request $request, $id)
+    {
+        try {
+            $response = $this->api()->delete("{$this->apiUrl}/member/progress/{$id}");
+
+            if ($response->status() === 401 || $response->status() === 403) {
+                $msg = $response->json('message') ?? 'Akses ditolak.';
+                if ($response->status() === 401) return $this->invalidSession();
+                return back()->with('error', $msg);
+            }
+            if (!$response->successful()) {
+                return back()->with('error', 'Gagal menghapus progress. (' . $response->status() . ')');
+            }
+
+            return back()->with('success', 'Progress berhasil dihapus.');
+        } catch (\Exception $e) {
+            Log::error('Member destroy progress error: ' . $e->getMessage());
+            return back()->with('error', 'Tidak dapat terhubung ke server.');
         }
     }
 

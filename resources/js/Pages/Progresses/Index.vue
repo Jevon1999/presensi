@@ -431,7 +431,6 @@ const countEntries = (dateGroup) => {
                             </div>
                         </div>
                     </div>
-                    </div>
                 </div>
             </div>
             <div v-else class="bg-white rounded-2xl border border-slate-200 p-8 text-center mt-3">

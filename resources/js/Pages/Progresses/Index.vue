@@ -130,14 +130,79 @@ const pagination = computed(() => ({
     total: props.progresses?.total || 0,
 }))
 
-const formatDate = (d) => {
-    if (!d) return '-'
-    return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+// ─── Group by date + member for batch display ───
+const todayStr = new Date().toISOString().slice(0, 10)
+
+const normalizeDate = (d) => {
+    if (!d) return ''
+    if (typeof d === 'string' && d.length >= 10) return d.slice(0, 10)
+    return new Date(d).toISOString().slice(0, 10)
 }
 
-const truncate = (str, len = 80) => {
-    if (!str) return '-'
-    return str.length > len ? str.slice(0, len) + '...' : str
+// Group: { "2026-04-30": { "member-id-1": { member: {...}, items: [...] }, ... }, ... }
+const grouped = computed(() => {
+    const groups = {}
+    list.value.forEach(p => {
+        const d = normalizeDate(p.tanggal)
+        if (!groups[d]) groups[d] = {}
+        const mId = p.member_id || 'unknown'
+        if (!groups[d][mId]) {
+            groups[d][mId] = {
+                member: p.member,
+                items: []
+            }
+        }
+        groups[d][mId].items.push(p)
+    })
+    return groups
+})
+
+const todayGroup = computed(() => grouped.value[todayStr] || {})
+const todayHasData = computed(() => Object.keys(todayGroup.value).length > 0)
+
+const historyDates = computed(() => {
+    return Object.keys(grouped.value)
+        .filter(d => d !== todayStr)
+        .sort((a, b) => b.localeCompare(a))
+})
+
+// Track which history dates are expanded
+const expandedDates = ref(new Set())
+const toggleDate = (d) => {
+    if (expandedDates.value.has(d)) {
+        expandedDates.value.delete(d)
+    } else {
+        expandedDates.value.add(d)
+    }
+    // Force reactivity
+    expandedDates.value = new Set(expandedDates.value)
+}
+
+const formatDate = (d) => {
+    if (!d) return '-'
+    const parsed = new Date(typeof d === 'string' && d.length === 10 ? d + 'T00:00:00' : d)
+    if (isNaN(parsed.getTime())) return d
+    return parsed.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+const formatDateShort = (d) => {
+    if (!d) return '-'
+    const parsed = new Date(typeof d === 'string' && d.length === 10 ? d + 'T00:00:00' : d)
+    if (isNaN(parsed.getTime())) return d
+    return parsed.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+const tipeConfig = (tipe) => {
+    const map = {
+        hadir: { label: 'Hadir', icon: 'work', cls: 'bg-blue-50 text-blue-600 border-blue-100' },
+        sakit: { label: 'Sakit', icon: 'medical_services', cls: 'bg-red-50 text-red-600 border-red-100' },
+        izin:  { label: 'Izin', icon: 'assignment_late', cls: 'bg-amber-50 text-amber-600 border-amber-100' },
+    }
+    return map[tipe] || map.hadir
+}
+
+const countEntries = (dateGroup) => {
+    return Object.values(dateGroup).reduce((sum, g) => sum + g.items.length, 0)
 }
 </script>
 
@@ -169,19 +234,16 @@ const truncate = (str, len = 80) => {
                         @click.stop="showMemberDropdown = true"
                         @focus="showMemberDropdown = true"
                         placeholder="Cari anggota..."
-                        class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none transition-all bg-white pr-16"
+                        class="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 bg-white text-slate-700 focus:border-blue-400 outline-none transition-all pr-16"
                     />
-                    <!-- Selected label overlay -->
                     <div v-if="selectedMemberName && !memberSearch" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-700 pointer-events-none truncate max-w-[130px]">
                         {{ selectedMemberName }}
                     </div>
-                    <!-- Clear button -->
                     <button v-if="memberFilter" @click.stop="clearMember" class="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                         <span class="material-symbols-rounded text-[16px]">close</span>
                     </button>
                     <span class="material-symbols-rounded absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
 
-                    <!-- Dropdown -->
                     <div v-if="showMemberDropdown" class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto" @click.stop>
                         <div
                             class="px-4 py-2.5 hover:bg-slate-50 cursor-pointer text-sm text-slate-500 border-b border-slate-50"
@@ -242,92 +304,135 @@ const truncate = (str, len = 80) => {
             </div>
         </div>
 
-        <!-- Table (Desktop) -->
-        <div class="bg-white rounded-2xl border border-slate-200 hidden lg:block">
-            <div v-if="list.length" class="overflow-auto max-h-[calc(100vh-22rem)]">
-                <table class="w-full min-w-[700px]">
-                    <thead class="sticky top-0 z-10">
-                        <tr class="border-b border-slate-100 bg-white">
-                            <th class="sticky left-0 z-20 bg-white text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[1px_0_0_0_#f1f5f9] whitespace-nowrap">Tanggal</th>
-                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Nama</th>
-                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Kantor</th>
-                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Tipe</th>
-                            <th class="text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3">Deskripsi</th>
-                            <th class="sticky right-0 z-20 bg-white text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider px-4 py-3 shadow-[-1px_0_0_0_#f1f5f9]">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="p in list" :key="p.id" class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                            <td class="sticky left-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 text-sm text-slate-600 whitespace-nowrap shadow-[1px_0_0_0_#f1f5f9]">{{ formatDate(p.tanggal) }}</td>
-                            <td class="px-4 py-3">
-                                <p class="text-sm font-semibold text-slate-700 whitespace-nowrap">{{ p.member?.nama_lengkap || '-' }}</p>
-                            </td>
-                            <td class="px-4 py-3 text-sm text-slate-600 whitespace-nowrap">{{ p.member?.office?.name || '-' }}</td>
-                            <td class="px-4 py-3 whitespace-nowrap">
-                                <span v-if="p.tipe === 'sakit'" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[11px] font-bold border border-red-100">
-                                    <span class="material-symbols-rounded text-[14px]">medical_services</span> Sakit
-                                </span>
-                                <span v-else-if="p.tipe === 'izin'" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 text-amber-600 text-[11px] font-bold border border-amber-100">
-                                    <span class="material-symbols-rounded text-[14px]">assignment_late</span> Izin
-                                </span>
-                                <span v-else class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 text-blue-600 text-[11px] font-bold border border-blue-100">
-                                    <span class="material-symbols-rounded text-[14px]">work</span> Hadir
-                                </span>
-                            </td>
-                            <td class="px-4 py-3 text-sm text-slate-600 max-w-sm">{{ truncate(p.description) }}</td>
-                            <td class="sticky right-0 z-[5] bg-white hover:bg-slate-50/50 px-4 py-3 text-right shadow-[-1px_0_0_0_#f1f5f9]">
-                                <div class="flex items-center justify-end gap-1">
-                                    <button @click="openEdit(p)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
-                                        <span class="material-symbols-rounded text-[18px]">edit</span>
-                                    </button>
-                                    <button @click="confirmDelete(p.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Hapus">
-                                        <span class="material-symbols-rounded text-[18px]">delete</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- ════════════════════════════════════ -->
+        <!-- TODAY'S PROGRESS                     -->
+        <!-- ════════════════════════════════════ -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                    <span class="material-symbols-rounded text-blue-500 text-[18px]">today</span>
+                    Progress Hari Ini
+                    <span v-if="todayHasData" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600">{{ countEntries(todayGroup) }}</span>
+                </h2>
+                <p class="text-xs text-slate-400">{{ formatDate(todayStr) }}</p>
             </div>
-            <EmptyState v-if="!list.length" icon="trending_up" title="Belum ada progress" description="Tambahkan progress untuk mencatat aktivitas harian." />
-            <div v-if="list.length" class="px-4 pb-4 border-t border-slate-100">
-                <Pagination v-bind="pagination" />
+
+            <div v-if="todayHasData" class="space-y-3">
+                <!-- Per member batch -->
+                <div v-for="(group, memberId) in todayGroup" :key="memberId" class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                    <!-- Member header -->
+                    <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 rounded-md bg-blue-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                                {{ (group.member?.nama_lengkap || '?')[0].toUpperCase() }}
+                            </div>
+                            <span class="text-xs font-bold text-slate-700">{{ group.member?.nama_lengkap || '-' }}</span>
+                            <span class="text-[10px] text-slate-400">{{ group.member?.office?.name || '' }}</span>
+                        </div>
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600">{{ group.items.length }} progress</span>
+                    </div>
+                    <!-- Entries -->
+                    <div v-for="(p, idx) in group.items" :key="p.id"
+                        :class="['px-4 py-3', idx < group.items.length - 1 ? 'border-b border-slate-50' : '']">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex-1 min-w-0 flex items-start gap-2">
+                                <span class="w-5 h-5 rounded-md bg-blue-50 flex items-center justify-center text-blue-500 text-[11px] font-bold shrink-0 mt-0.5">{{ idx + 1 }}</span>
+                                <div class="flex-1 min-w-0">
+                                    <span :class="['inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold border mb-1', tipeConfig(p.tipe).cls]">
+                                        <span class="material-symbols-rounded text-[11px]">{{ tipeConfig(p.tipe).icon }}</span>
+                                        {{ tipeConfig(p.tipe).label }}
+                                    </span>
+                                    <p class="text-sm text-slate-700 whitespace-pre-line leading-relaxed">{{ p.description || '-' }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button @click="openEdit(p)" class="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
+                                    <span class="material-symbols-rounded text-[16px]">edit</span>
+                                </button>
+                                <button @click="confirmDelete(p.id)" class="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Hapus">
+                                    <span class="material-symbols-rounded text-[16px]">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-else class="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+                <span class="material-symbols-rounded text-slate-300 text-[32px] mb-2">edit_note</span>
+                <p class="text-sm font-semibold text-slate-500">Belum ada progress hari ini</p>
             </div>
         </div>
 
+        <!-- ════════════════════════════════════ -->
+        <!-- HISTORY (click to expand per date)   -->
+        <!-- ════════════════════════════════════ -->
+        <div v-if="historyDates.length">
+            <h2 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
+                <span class="material-symbols-rounded text-slate-400 text-[18px]">history</span>
+                Riwayat Progress
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">{{ historyDates.length }} hari</span>
+            </h2>
 
-        <!-- Cards (Mobile) -->
-        <div class="lg:hidden space-y-3">
-            <div
-                v-for="p in list"
-                :key="'card-' + p.id"
-                class="bg-white rounded-2xl border border-slate-200 p-4"
-            >
-                <div class="flex items-start justify-between mb-2">
-                    <div>
-                        <p class="font-semibold text-sm text-slate-800">{{ p.member?.nama_lengkap || '-' }}</p>
-                        <p class="text-xs text-slate-400">{{ p.member?.office?.name || '-' }} &middot; {{ formatDate(p.tanggal) }}</p>
+            <div class="space-y-2">
+                <div v-for="date in historyDates" :key="date">
+                    <!-- Date toggle header -->
+                    <button @click="toggleDate(date)"
+                        class="w-full flex items-center justify-between px-4 py-3 bg-white rounded-2xl border border-slate-200 hover:bg-slate-50 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-rounded text-slate-400 text-[16px]">calendar_today</span>
+                            <span class="text-sm font-semibold text-slate-700">{{ formatDateShort(date) }}</span>
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">{{ countEntries(grouped[date]) }} progress</span>
+                        </div>
+                        <span class="material-symbols-rounded text-slate-400 text-[20px] transition-transform" :class="{ 'rotate-180': expandedDates.has(date) }">expand_more</span>
+                    </button>
+
+                    <!-- Expanded content -->
+                    <div v-if="expandedDates.has(date)" class="mt-2 space-y-2 ml-2">
+                        <div v-for="(group, memberId) in grouped[date]" :key="memberId" class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                            <!-- Member header -->
+                            <div class="px-4 py-2 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                                <div class="w-5 h-5 rounded-md bg-slate-300 flex items-center justify-center text-white text-[9px] font-bold shrink-0">
+                                    {{ (group.member?.nama_lengkap || '?')[0].toUpperCase() }}
+                                </div>
+                                <span class="text-xs font-bold text-slate-600">{{ group.member?.nama_lengkap || '-' }}</span>
+                                <span class="text-[10px] text-slate-400">{{ group.member?.office?.name || '' }}</span>
+                            </div>
+                            <!-- Entries with admin CRUD -->
+                            <div v-for="(p, idx) in group.items" :key="p.id"
+                                :class="['px-4 py-2.5', idx < group.items.length - 1 ? 'border-b border-slate-50' : '']">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex-1 min-w-0 flex items-start gap-2">
+                                        <span class="w-4 h-4 rounded bg-slate-100 flex items-center justify-center text-slate-400 text-[10px] font-bold shrink-0 mt-0.5">{{ idx + 1 }}</span>
+                                        <div class="flex-1 min-w-0">
+                                            <span :class="['inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold border mb-0.5', tipeConfig(p.tipe).cls]">
+                                                <span class="material-symbols-rounded text-[10px]">{{ tipeConfig(p.tipe).icon }}</span>
+                                                {{ tipeConfig(p.tipe).label }}
+                                            </span>
+                                            <p class="text-sm text-slate-600 whitespace-pre-line leading-relaxed">{{ p.description || '-' }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <button @click="openEdit(p)" class="p-1 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors" title="Edit">
+                                            <span class="material-symbols-rounded text-[15px]">edit</span>
+                                        </button>
+                                        <button @click="confirmDelete(p.id)" class="p-1 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" title="Hapus">
+                                            <span class="material-symbols-rounded text-[15px]">delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <span v-if="p.tipe === 'sakit'" class="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[10px] font-bold border border-red-100 flex items-center gap-1">Sakit</span>
-                    <span v-else-if="p.tipe === 'izin'" class="px-2 py-1 rounded-lg bg-amber-50 text-amber-600 text-[10px] font-bold border border-amber-100 flex items-center gap-1">Izin</span>
-                    <span v-else class="px-2 py-1 rounded-lg bg-blue-50 text-blue-600 text-[10px] font-bold border border-blue-100 flex items-center gap-1">Hadir</span>
-                </div>
-                <p class="text-sm text-slate-600 mb-3 leading-relaxed">{{ truncate(p.description, 120) }}</p>
-                <div class="flex gap-2 pt-2 border-t border-slate-100">
-                    <button @click="openEdit(p)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors">
-                        <span class="material-symbols-rounded text-[16px]">edit</span>
-                        Edit
-                    </button>
-                    <button @click="confirmDelete(p.id)" class="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors">
-                        <span class="material-symbols-rounded text-[16px]">delete</span>
-                        Hapus
-                    </button>
                 </div>
             </div>
-            <EmptyState v-if="!list.length" icon="trending_up" title="Belum ada progress" description="Tambahkan progress untuk mencatat aktivitas harian." />
-            <div v-if="list.length">
-                <Pagination v-bind="pagination" />
-            </div>
+        </div>
+
+        <!-- Empty state (no data at all) -->
+        <EmptyState v-if="!list.length" icon="trending_up" title="Belum ada progress" description="Tambahkan progress untuk mencatat aktivitas harian." />
+
+        <!-- Pagination -->
+        <div v-if="list.length" class="mt-4">
+            <Pagination v-bind="pagination" />
         </div>
 
         <!-- Form Panel -->

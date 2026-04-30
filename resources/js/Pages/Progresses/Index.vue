@@ -60,7 +60,7 @@ const clearMember = () => {
     showMemberDropdown.value = false
 }
 
-const showHistory = ref(false)
+const activeTab = ref('today')
 
 const applyFilters = () => {
     router.get('/progresses', {
@@ -306,19 +306,31 @@ const countEntries = (dateGroup) => {
             </div>
         </div>
 
+        <!-- TABS -->
+        <div class="flex items-center justify-between border-b border-slate-200 mb-6">
+            <div class="flex gap-6">
+                <button @click="activeTab = 'today'" :class="['pb-3 text-sm font-bold border-b-2 transition-colors relative -mb-[1px]', activeTab === 'today' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700']">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-rounded text-[18px]">today</span>
+                        Hari Ini
+                        <span v-if="todayHasData" :class="['text-[10px] font-bold px-1.5 py-0.5 rounded-full', activeTab === 'today' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500']">{{ countEntries(todayGroup) }}</span>
+                    </div>
+                </button>
+                <button @click="activeTab = 'history'" :class="['pb-3 text-sm font-bold border-b-2 transition-colors relative -mb-[1px]', activeTab === 'history' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700']">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-rounded text-[18px]">history</span>
+                        Riwayat
+                        <span v-if="historyDates.length" :class="['text-[10px] font-bold px-1.5 py-0.5 rounded-full', activeTab === 'history' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-500']">{{ historyDates.length }} hari</span>
+                    </div>
+                </button>
+            </div>
+            <p v-if="activeTab === 'today'" class="text-xs text-slate-400 pb-3">{{ formatDate(todayStr) }}</p>
+        </div>
+
         <!-- ════════════════════════════════════ -->
         <!-- TODAY'S PROGRESS                     -->
         <!-- ════════════════════════════════════ -->
-        <div class="mb-6">
-            <div class="flex items-center justify-between mb-3">
-                <h2 class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <span class="material-symbols-rounded text-blue-500 text-[18px]">today</span>
-                    Progress Hari Ini
-                    <span v-if="todayHasData" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-600">{{ countEntries(todayGroup) }}</span>
-                </h2>
-                <p class="text-xs text-slate-400">{{ formatDate(todayStr) }}</p>
-            </div>
-
+        <div v-if="activeTab === 'today'" class="mb-6">
             <div v-if="todayHasData" class="space-y-3">
                 <!-- Per member batch -->
                 <div v-for="(group, memberId) in todayGroup" :key="memberId" class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
@@ -368,17 +380,8 @@ const countEntries = (dateGroup) => {
         <!-- ════════════════════════════════════ -->
         <!-- HISTORY (click to expand per date)   -->
         <!-- ════════════════════════════════════ -->
-        <div v-if="historyDates.length" class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <button @click="showHistory = !showHistory" class="w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors flex items-center justify-between border-b border-slate-200">
-                <div class="flex items-center gap-2">
-                    <span class="material-symbols-rounded text-slate-500 text-[18px]">history</span>
-                    <span class="text-sm font-bold text-slate-700">Riwayat Progress</span>
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-600">{{ historyDates.length }} hari</span>
-                </div>
-                <span class="material-symbols-rounded text-slate-400 text-[20px] transition-transform" :class="{ 'rotate-180': showHistory }">expand_more</span>
-            </button>
-
-            <div v-if="showHistory" class="p-4 space-y-2 bg-slate-50">
+        <div v-if="activeTab === 'history'">
+            <div v-if="historyDates.length" class="space-y-3">
                 <div v-for="date in historyDates" :key="date">
                     <!-- Date toggle header -->
                     <button @click="toggleDate(date)"
@@ -428,7 +431,12 @@ const countEntries = (dateGroup) => {
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
+            </div>
+            <div v-else class="bg-white rounded-2xl border border-slate-200 p-8 text-center mt-3">
+                <span class="material-symbols-rounded text-slate-300 text-[32px] mb-2">history</span>
+                <p class="text-sm font-semibold text-slate-500">Belum ada riwayat progress</p>
             </div>
         </div>
 

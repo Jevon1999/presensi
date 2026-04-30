@@ -60,6 +60,8 @@ const clearMember = () => {
     showMemberDropdown.value = false
 }
 
+const showHistory = ref(false)
+
 const applyFilters = () => {
     router.get('/progresses', {
         member_id: memberFilter.value || undefined,
@@ -366,14 +368,17 @@ const countEntries = (dateGroup) => {
         <!-- ════════════════════════════════════ -->
         <!-- HISTORY (click to expand per date)   -->
         <!-- ════════════════════════════════════ -->
-        <div v-if="historyDates.length">
-            <h2 class="text-sm font-bold text-slate-700 flex items-center gap-2 mb-3">
-                <span class="material-symbols-rounded text-slate-400 text-[18px]">history</span>
-                Riwayat Progress
-                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500">{{ historyDates.length }} hari</span>
-            </h2>
+        <div v-if="historyDates.length" class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+            <button @click="showHistory = !showHistory" class="w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors flex items-center justify-between border-b border-slate-200">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-rounded text-slate-500 text-[18px]">history</span>
+                    <span class="text-sm font-bold text-slate-700">Riwayat Progress</span>
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-600">{{ historyDates.length }} hari</span>
+                </div>
+                <span class="material-symbols-rounded text-slate-400 text-[20px] transition-transform" :class="{ 'rotate-180': showHistory }">expand_more</span>
+            </button>
 
-            <div class="space-y-2">
+            <div v-if="showHistory" class="p-4 space-y-2 bg-slate-50">
                 <div v-for="date in historyDates" :key="date">
                     <!-- Date toggle header -->
                     <button @click="toggleDate(date)"
